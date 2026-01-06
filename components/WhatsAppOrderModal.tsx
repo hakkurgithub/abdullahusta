@@ -37,7 +37,7 @@ export default function WhatsAppOrderModal({ isOpen, onClose }: WhatsAppOrderMod
     const orderText = items.map(item => `${item.name} x${item.quantity} - ₺${(item.price * item.quantity).toFixed(0)}`).join('\n');
     const totalPrice = getTotalPrice().toFixed(0);
     
-    const message = `🍽️ *Borcan Kebap Siparişi*\n\n📋 *Sipariş Detayları:*\n${orderText}\n\n💰 *Toplam Tutar:* ₺${totalPrice}\n\n👤 *Müşteri Bilgileri:*\n📛 Ad: ${customerInfo.name}\n📞 Telefon: ${customerInfo.phone}\n📍 Adres: ${customerInfo.address}`;
+    const message = `🍽️ *Abdullah Usta Siparişi*\n\n📋 *Sipariş Detayları:*\n${orderText}\n\n💰 *Toplam Tutar:* ₺${totalPrice}\n\n👤 *Müşteri Bilgileri:*\n📛 Ad: ${customerInfo.name}\n📞 Telefon: ${customerInfo.phone}\n📍 Adres: ${customerInfo.address}`;
     
     const phoneNumber = '905455093462';
     const encodedMessage = encodeURIComponent(message);

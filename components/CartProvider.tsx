@@ -93,7 +93,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     const now = new Date();
     const tarihSaat = now.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
-    const siparisNo = `BORCAN-${Date.now().toString().slice(-6)}`;
+    const siparisNo = `Abdullah Usta-${Date.now().toString().slice(-6)}`;
 
     let message = `*Yeni Sipariş Talebi* 🔥\n`;
     message += `*Sipariş No:* ${siparisNo}\n`;

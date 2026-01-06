@@ -59,7 +59,7 @@ export default function MenuPage() {
                   BK
                 </div>
                 <span className="text-2xl font-bold text-red-600 font-['Pacifico']">
-                  {content.restaurantName || "Borcan Kebap"}
+                  {content.restaurantName || "Abdullah Usta"}
                 </span>
               </Link>
             </div>

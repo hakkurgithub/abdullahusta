@@ -33,7 +33,7 @@ export default function ReservationPage() {
     });
 
     const message = `Merhaba!
-Borcan Kebap'tan masa rezervasyonu istiyorum:
+Abdullah Usta'tan masa rezervasyonu istiyorum:
 📅 Tarih: ${dateTr}
 🕒 Saat: ${selectedTime}
 👥 Kişi sayısı: ${guests}
@@ -56,7 +56,7 @@ Teşekkürler!`;
                   BK
                 </div>
                 <span className="text-2xl font-bold text-red-600 font-[\'Pacifico\']">
-                  Borcan Kebap
+                  Abdullah Usta
                 </span>
               </Link>
             </div>
@@ -102,7 +102,7 @@ Teşekkürler!`;
           <div className="text-center text-white px-4">
             <h1 className="text-5xl font-bold mb-4">Rezervasyon</h1>
             <p className="text-xl max-w-2xl mx-auto">
-              Borcan Kebap&apos;ta unutulmaz bir yemek deneyimi için masanızı ayırtın
+              Abdullah Usta&apos;ta unutulmaz bir yemek deneyimi için masanızı ayırtın
             </p>
           </div>
         </div>
@@ -379,7 +379,7 @@ Teşekkürler!`;
                 <div className="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center font-bold text-black text-lg border-2 border-black">
                   BK
                 </div>
-                <span className="font-[\'Pacifico\']">Borcan Kebap</span>
+                <span className="font-[\'Pacifico\']">Abdullah Usta</span>
               </h3>
               <p className="text-gray-400 mb-4">
                 Geleneksel Türk mutfağının eşsiz lezzetlerini modern sunum ile buluşturuyoruz.
@@ -388,7 +388,7 @@ Teşekkürler!`;
                 <a href="https://www.facebook.com/brcnkbp" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors">
                   <i className="ri-facebook-fill text-lg"></i>
                 </a>
-                <a href="https://www.instagram.com/borcankebap/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 rounded-full flex items-center justify-center cursor-pointer hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 transition-all">
+                <a href="https://www.instagram.com/abdullahusta/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 rounded-full flex items-center justify-center cursor-pointer hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 transition-all">
                   <i className="ri-instagram-fill text-lg"></i>
                 </a>
                 <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors">
@@ -427,13 +427,13 @@ Teşekkürler!`;
               <h4 className="text-lg font-semibold mb-4">Online Sipariş</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="https://www.yemeksepeti.com/restaurant/kw28/borcan-kebap-pide-lahmacun-salonu" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors cursor-pointer flex items-center">
+                  <a href="https://www.yemeksepeti.com/restaurant/kw28/Abdullah Usta-kebap-pide-lahmacun-salonu" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors cursor-pointer flex items-center">
                     <i className="ri-restaurant-line mr-2 text-orange-600"></i>
                     Yemeksepeti
                   </a>
                 </li>
                 <li>
-                  <a href="https://getir.com/yemek/restoran/borcan-kebap-pide-lahmacun-salonu-mustafa-kemalpasa-mah-avcilar-istanbul/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors cursor-pointer flex items-center">
+                  <a href="https://getir.com/yemek/restoran/Abdullah Usta-kebap-pide-lahmacun-salonu-mustafa-kemalpasa-mah-avcilar-istanbul/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors cursor-pointer flex items-center">
                     <i className="ri-truck-line mr-2 text-orange-600"></i>
                     Getir
                   </a>
@@ -445,7 +445,7 @@ Teşekkürler!`;
                   </a>
                 </li>
                 <li>
-                  <a href="https://wa.me/905455093462?text=Merhaba! Borcan Kebap'tan sipariş vermek istiyorum." target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors cursor-pointer flex items-center">
+                  <a href="https://wa.me/905455093462?text=Merhaba! Abdullah Usta'tan sipariş vermek istiyorum." target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors cursor-pointer flex items-center">
                     <i className="ri-whatsapp-line mr-2 text-green-600"></i>
                     WhatsApp
                   </a>
@@ -470,7 +470,7 @@ Teşekkürler!`;
                 </li>
                 <li className="flex items-center">
                   <i className="ri-mail-line mr-2"></i>
-                  info@borcankebap.com
+                  info@abdullahusta.com
                 </li>
                 <li className="flex items-start">
                   <i className="ri-map-pin-line mr-2 mt-1"></i>
@@ -490,7 +490,7 @@ Teşekkürler!`;
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Borcan Kebap. Tüm hakları saklıdır.</p>
+            <p>&copy; 2024 Abdullah Usta. Tüm hakları saklıdır.</p>
           </div>
         </div>
       </footer>

@@ -32,7 +32,7 @@ export default function Navbar() {
           href="/"
           className="text-2xl font-bold tracking-wide hover:text-yellow-300 transition"
         >
-          Borcan Kebap
+          Abdullah Usta
         </Link>
 
         <div className="hidden md:flex space-x-6 items-center">

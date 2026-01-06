@@ -12,8 +12,8 @@ const pacifico = Pacifico({
 });
 
 export const metadata: Metadata = {
-  title: "Borcan Kebap - Geleneksel Türk Mutfağı",
-  description: "1985'ten beri İstanbul'da hizmet veren Borcan Kebap'ta geleneksel Türk mutfağının eşsiz lezzetlerini keşfedin. Adana kebap, pide, lahmacun ve daha fazlası.",
+  title: "Abdullah Usta - Geleneksel Türk Mutfağı",
+  description: "1985'ten beri İstanbul'da hizmet veren Abdullah Usta'ta geleneksel Türk mutfağının eşsiz lezzetlerini keşfedin. Adana kebap, pide, lahmacun ve daha fazlası.",
   // ... (diğer metadata ayarlarınız)
 };
 
