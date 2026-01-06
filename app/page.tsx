@@ -3,6 +3,7 @@
 
 // Gerekli bileşenleri ve hook'ları içe aktarıyoruz
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ReservationModal from '../components/ReservationModal';
@@ -213,10 +214,11 @@ export default function Home() {
                 <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
                   <div className="relative h-48">
                     {item.image && (
-                      <img
+                      <Image
                         src={item.image}
                         alt={item.name}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     )}
                   </div>
@@ -290,9 +292,11 @@ export default function Home() {
                 </div>
               </div>
               <div className="relative">
-                <img
+                <Image
                   src="https://readdy.ai/api/search-image?query=Chef%20preparing%20a%20delicious%20dish%20in%20a%20professional%20kitchen%20restaurant%20setting%20food%20preparation%20authentic%20and%20candid%20photo&width=600&height=400&seq=chef1&orientation=landscape"
                   alt="Aşçı Yemeği Hazırlarken"
+                  width={600}
+                  height={400}
                   className="rounded-lg shadow-xl"
                 />
               </div>
