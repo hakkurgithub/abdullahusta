@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // BU KISMI EKLEYİN: Lint hataları olsa bile yayına almayı sağlar
+  // Lint ve Type hatalarını derleme sırasında yoksay
   eslint: {
     ignoreDuringBuilds: true,
   },
