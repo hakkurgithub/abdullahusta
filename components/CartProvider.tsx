@@ -2,7 +2,6 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 
-// Tipleri tanımlayalım
 interface CartItem {
   id: number;
   name: string;
@@ -21,10 +20,8 @@ interface CartContextType {
   sendOrderToWhatsApp: (masa: string, adres: string, not: string) => void;
 }
 
-// Context'i oluşturalım
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Hook'u oluşturalım (diğer bileşenlerden sepete erişmek için)
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -33,7 +30,6 @@ export const useCart = () => {
   return context;
 };
 
-// Provider'ı oluşturalım (tüm sepet mantığının merkezi)
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
@@ -93,20 +89,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     const now = new Date();
     const tarihSaat = now.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
-    const siparisNo = `Abdullah Usta-${Date.now().toString().slice(-6)}`;
+    const siparisNo = `AU-${Date.now().toString().slice(-6)}`;
 
-    let message = `*Yeni Sipariş Talebi* 🔥\n`;
+    let message = `*YENİ SİPARİŞ (Abdullah Usta)* 🔥\n`;
     message += `*Sipariş No:* ${siparisNo}\n`;
     message += `*Tarih:* ${tarihSaat}\n\n--------------------------\n`;
     items.forEach(item => {
-      message += `${item.quantity} x ${item.name} - ${item.price * item.quantity} ₺\n`;
+      message += `• ${item.quantity} x ${item.name} - ${item.price * item.quantity} ₺\n`;
     });
     message += `--------------------------\n*Toplam Tutar:* ${getTotalPrice()} ₺\n\n`;
-    if (masa) message += `*Masa Numarası:* ${masa}\n`;
-    if (adres) message += `*Adres:* ${adres}\n`;
-    if (not) message += `*Müşteri Notu:* ${not}\n`;
+    
+    if (masa) message += `📍 *Masa:* ${masa}\n`;
+    if (adres) message += `🏠 *Adres:* ${adres}\n`;
+    if (not) message += `📝 *Not:* ${not}\n`;
 
-    const phoneNumber = "905333715577"; // Kendi numaranızı yazın
+    // Abdullah Usta Güncel WhatsApp Numarası
+    const phoneNumber = "905442024244"; 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);

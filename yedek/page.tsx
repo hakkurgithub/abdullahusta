@@ -48,80 +48,72 @@ export default function Home() {
 
   return (
     <>
+      {/* Hero Section */}
       <section 
-        className="relative h-[85vh] flex items-center justify-center text-center text-white bg-neutral-900"
+        className="relative h-[70vh] flex items-center justify-center text-center text-white bg-neutral-900"
         style={{ 
-          backgroundImage: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta-hero.png')",
+          backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://raw.githubusercontent.com/hakkurgithub/images/main/hero-bg.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'center top'
-        }}>
-        <div className="relative z-10 px-4 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight drop-shadow-2xl">
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="relative z-10 px-4">
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
             {content.heroTitle || "Lezzetin Ustası Abdullah Usta"}
           </h1>
-          <p className="text-xl md:text-2xl font-medium mb-10 opacity-95 drop-shadow-lg">
-            {content.heroSubtitle || "Geleneksel ocakbaşı lezzetini usta ellerden deneyimleyin."}
+          <p className="text-xl md:text-2xl font-light mb-10 max-w-3xl mx-auto opacity-90">
+            {content.heroSubtitle || "Geleneksel kebap lezzetini usta ellerden deneyimleyin."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/menu" className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-xl">
-              Menüyü İncele
+              Hemen Sipariş Ver
             </Link>
-            <button 
-              onClick={() => setShowReservationModal(true)}
-              className="bg-white hover:bg-gray-100 text-gray-900 font-bold py-4 px-10 rounded-full transition-all shadow-xl hover:scale-105">
-              Rezervasyon Yap
-            </button>
+            <a 
+              href="tel:+902128120244" 
+              className="bg-white hover:bg-gray-100 text-gray-900 font-bold py-4 px-10 rounded-full transition-all shadow-xl"
+            >
+              Masa Ayırt
+            </a>
           </div>
-        </div>
-
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <span className="text-3xl opacity-80">⬇️</span>
         </div>
       </section>
 
-      <section className="py-20 container mx-auto px-4 bg-white">
+      {/* Popüler Ürünler Section */}
+      <section className="py-20 container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Öne Çıkan Lezzetler</h2>
           <div className="w-20 h-1 bg-red-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Misafirlerimizin en çok tercih ettiği imza tabaklarımız.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {popularItems.map((item, index) => (
-            <div key={index} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group">
-              <div className="relative h-64 w-full overflow-hidden">
+            <div key={index} className="bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:-translate-y-2">
+              <div className="relative h-56 w-full">
                 <img 
                   src={item.image || 'https://raw.githubusercontent.com/hakkurgithub/images/main/placeholder.jpg'} 
                   alt={item.name} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm flex items-center gap-1">
-                  <span className="text-sm">⭐</span>
-                  <span className="text-sm font-bold text-gray-800">4.9</span>
-                </div>
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors">{item.name}</h3>
-                <p className="text-gray-500 text-sm mb-4 line-clamp-2">{item.description}</p>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{item.name}</h3>
+                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{item.description}</p>
                 <div className="flex justify-between items-center">
-                  <span className="text-red-600 font-black text-2xl">{item.price} ₺</span>
+                  <span className="text-red-600 font-extrabold text-2xl">{item.price} ₺</span>
                   <button 
                     onClick={() => handleAddToCart(item)}
-                    className="bg-red-600 text-white p-3 rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-100 active:scale-95">
-                    🛒
+                    className="bg-gray-100 hover:bg-red-600 hover:text-white text-red-600 p-3 rounded-xl transition-all font-bold"
+                  >
+                    + Ekle
                   </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        <div className="text-center mt-12">
-          <Link href="/menu" className="inline-flex items-center gap-2 text-red-600 font-bold hover:underline text-lg">
-            Tüm Menüyü Gör →
-          </Link>
-        </div>
       </section>
 
+      {/* Modals */}
       <ReservationModal isOpen={showReservationModal} onClose={() => setShowReservationModal(false)} />
       <WhatsAppOrderModal isOpen={showWhatsAppModal} onClose={() => setShowWhatsAppModal(false)} />
       {isAdminMode && <AdminPanel isOpen={showAdminPanel} onClose={() => setShowAdminPanel(false)} />}

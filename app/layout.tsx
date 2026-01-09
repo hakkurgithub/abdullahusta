@@ -1,33 +1,50 @@
 import type { Metadata } from "next";
-import { Inter, Pacifico } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "../components/CartProvider";
-import Navbar from "../components/Navbar"; // Navbar'ı import etmeyi unutmayın
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
-const pacifico = Pacifico({
-  weight: "400",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  variable: "--font-pacifico",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Abdullah Usta - Geleneksel Türk Mutfağı",
-  description: "1985'ten beri İstanbul'da hizmet veren Abdullah Usta'ta geleneksel Türk mutfağının eşsiz lezzetlerini keşfedin. Adana kebap, pide, lahmacun ve daha fazlası.",
-  // ... (diğer metadata ayarlarınız)
+  title: "Abdullah Usta | Kebap & Pide Salonu",
+  description: "Avcılar'da geleneksel lezzetin adresi. 40 yıllık tecrübeyle usta ellerden çıkan kebap, pide ve lahmacun çeşitleri.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="tr" className={`${inter.className} ${pacifico.variable}`}>
-      <body className={inter.className} suppressHydrationWarning={true}>
+    <html lang="tr">
+      <head>
+        <link
+          href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+          rel="stylesheet"
+        />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gray-50`}>
         <CartProvider>
+          {/* Global Header */}
           <Navbar />
-          <main>{children}</main>
+          
+          {/* Sayfa İçeriği */}
+          <main className="flex-grow">
+            {children}
+          </main>
+          
+          {/* Global Footer */}
+          <Footer />
         </CartProvider>
       </body>
     </html>

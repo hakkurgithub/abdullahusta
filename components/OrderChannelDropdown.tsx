@@ -1,27 +1,22 @@
 "use client";
 
 import React from "react";
-import { useCart } from "./CartProvider"; // ✅ CartProvider'dan hook'umuzu import ediyoruz.
 
 export default function OrderChannelDropdown() {
-  // 1. Sadece ihtiyacımız olan 'sendOrderToWhatsApp' fonksiyonunu CartProvider'dan alıyoruz.
-  const { sendOrderToWhatsApp } = useCart();
-
-  const handleOrderClick = () => {
-    // 2. Merkezi sipariş gönderme fonksiyonumuzu çağırıyoruz.
-    // Bu buton genel bir buton olduğu için masa/adres/not bilgisi gönderemez.
-    // Bu yüzden bu alanları boş ('') gönderiyoruz.
-    // Fonksiyonumuz zaten bu alanlar boşsa mesaja eklemiyor, bu yüzden sorun olmaz.
-    sendOrderToWhatsApp('', '', '');
+  const handleWhatsAppClick = () => {
+    const phoneNumber = "905442024244";
+    const message = encodeURIComponent("Merhaba Abdullah Usta, menü hakkında bilgi almak istiyorum.");
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
 
   return (
     <div className="relative inline-block text-left">
       <button
-        onClick={handleOrderClick} // ✅ Butonun tıklanma olayını yeni fonksiyonumuza bağlıyoruz.
-        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium cursor-pointer"
+        onClick={handleWhatsAppClick}
+        className="bg-[#25D366] text-white px-5 py-2.5 rounded-xl hover:bg-[#1ebe57] transition-all font-bold cursor-pointer shadow-lg shadow-green-100 flex items-center gap-2 active:scale-95"
       >
-        WhatsApp’tan Sipariş Ver
+        <i className="ri-whatsapp-line text-xl"></i>
+        WhatsApp Sipariş
       </button>
     </div>
   );

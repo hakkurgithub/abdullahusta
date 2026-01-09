@@ -1,12 +1,7 @@
-// app/menu/page.tsx DOSYASININ DOĞRU VE TAM HALİ
-
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
-// ✅✅✅ YOL DÜZELTMESİ BURADA ✅✅✅
-import OrderChannelDropdown from '../../components/OrderChannelDropdown';
 import { useCart } from '../../components/CartProvider';
 import { useContent } from '../../hooks/useContent';
 
@@ -23,7 +18,7 @@ interface MenuItem {
 export default function MenuPage() {
   const [filter, setFilter] = useState<string | "all">("all");
   const [search, setSearch] = useState("");
-  const { addItem, getTotalItems } = useCart();
+  const { addItem } = useCart();
   const { content } = useContent();
 
   const menuItems: MenuItem[] = content.allMenuItems || [];
@@ -48,133 +43,96 @@ export default function MenuPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* HEADER */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center font-bold text-black text-xl border-2 border-black">
-                  BK
-                </div>
-                <span className="text-2xl font-bold text-red-600 font-['Pacifico']">
-                  {content.restaurantName || "Abdullah Usta"}
-                </span>
-              </Link>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-red-600 font-medium transition-colors cursor-pointer">
-                Ana Sayfa
-              </Link>
-              <Link href="/menu" className="text-red-600 hover:text-red-700 font-medium transition-colors cursor-pointer">
-                Menü
-              </Link>
-              <Link href="/about" className="text-gray-700 hover:text-red-600 font-medium transition-colors cursor-pointer">
-                Hakkımızda
-              </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-red-600 font-medium transition-colors cursor-pointer">
-                İletişim
-              </Link>
-              <Link href="/reviews" className="text-gray-700 hover:text-red-600 font-medium transition-colors cursor-pointer">
-                Yorumlar
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium whitespace-nowrap cursor-pointer">
-                Rezervasyon
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Menü Başlık Alanı */}
+      <div className="bg-red-700 py-12 text-white text-center mb-8">
+        <h1 className="text-4xl font-bold mb-2">Lezzet Menümüz</h1>
+        <p className="opacity-90">Usta ellerden günlük taze hazırlanan lezzetler</p>
+      </div>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Arama ve Filtreleme */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 bg-white p-4 rounded-xl shadow-sm">
+          <div className="relative flex-1">
+            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input
+              type="text"
+              placeholder="Ürün veya içerik ara..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all text-gray-700"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                  filter === cat
+                    ? "bg-red-600 text-white shadow-md"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {cat === "all" ? "Tümü" : cat}
               </button>
-              <OrderChannelDropdown />
-              <div className="relative">
-                <Link href="/cart">
-                  <button className="bg-gray-100 text-red-600 p-2 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer" aria-label="Sepeti Görüntüle">
-                    <i className="ri-shopping-cart-line text-2xl"></i>
-                  </button>
-                </Link>
-                {getTotalItems() > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center pointer-events-none">
-                    {getTotalItems()}
-                  </span>
-                )}
-              </div>
-              <button className="md:hidden w-6 h-6 flex items-center justify-center cursor-pointer" aria-label="Menüyü Aç">
-                <i className="ri-menu-line text-xl"></i>
-              </button>
-            </div>
+            ))}
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="py-10 px-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Menü & Lezzetler</h1>
-        <div className="max-w-2xl mx-auto mb-6">
-          <input
-            type="text"
-            placeholder="Lezzet ara..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg text-sm"
-          />
-        </div>
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer whitespace-nowrap ${
-                filter === cat ? "bg-red-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              } transition-colors`}
-            >
-              {cat === "all" ? "Tümü" : cat}
-            </button>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        {/* Ürün Listesi */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className="bg-white shadow-md rounded-xl p-4 flex flex-col hover:shadow-lg transition-shadow"
+              className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col border border-gray-100 overflow-hidden group"
             >
-              {item.image && (
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  width={300}
-                  height={160}
-                  className="w-full h-40 object-cover rounded-md mb-3"
-                />
-              )}
-              <h2 className="text-lg font-semibold text-gray-800">{item.name}</h2>
-              <p className="text-gray-600 text-sm mb-2 flex-grow">{item.description}</p>
-              <div className="flex items-center justify-between mt-auto">
-                <span className="text-red-600 font-bold text-lg">{item.price} ₺</span>
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <i
-                      key={i}
-                      className={`ri-star-${i < (item.rating || 0) ? "fill" : "line"} text-yellow-400 text-sm`}
-                    ></i>
-                  ))}
+              <div className="relative h-48 overflow-hidden">
+                {item.image && (
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                )}
+                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm">
+                   <div className="flex items-center gap-1">
+                    <i className="ri-star-fill text-yellow-400 text-xs"></i>
+                    <span className="text-xs font-bold text-gray-800">{item.rating || "5.0"}</span>
+                  </div>
                 </div>
               </div>
-              <button
-                onClick={() => handleAddToCart(item)}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg mt-3 hover:bg-red-700 transition-colors cursor-pointer whitespace-nowrap"
-              >
-                Sepete Ekle
-              </button>
+              
+              <div className="p-5 flex flex-col flex-grow">
+                <h2 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors">
+                  {item.name}
+                </h2>
+                <p className="text-gray-500 text-sm mb-4 flex-grow line-clamp-2">
+                  {item.description}
+                </p>
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+                  <span className="text-red-600 font-black text-xl">{item.price} ₺</span>
+                  <button
+                    onClick={() => handleAddToCart(item)}
+                    className="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200 font-bold cursor-pointer"
+                  >
+                    + Ekle
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
+
+        {/* Sonuç Bulunamadı */}
+        {filteredItems.length === 0 && (
+          <div className="text-center py-20">
+            <i className="ri-search-eye-line text-6xl text-gray-300 mb-4 block"></i>
+            <p className="text-gray-500 text-lg">Aradığınız kriterlere uygun ürün bulunamadı.</p>
+          </div>
+        )}
       </main>
-      
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Footer içeriği */}
-        </div>
-      </footer>
     </div>
   );
 }
