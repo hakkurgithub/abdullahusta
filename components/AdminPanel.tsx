@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useContent } from '../hooks/useContent';
-import { MenuItem } from '../lib/menuData';
+
+// Hata almamak için interface'i burada tanımlıyoruz
+interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  category: string;
+  image?: string;
+}
 
 interface AdminPanelProps {
   isOpen?: boolean;
@@ -10,13 +19,9 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ isOpen = true, onClose }: AdminPanelProps) {
-  // useContent'ten sadece mevcut olan 'content' verisini alıyoruz
   const { content } = useContent();
   const [localContent, setLocalContent] = useState(content);
-  const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
-  const [showAddMenu, setShowAddMenu] = useState(false);
 
-  // Veriler değiştiğinde yerel state'i güncelle
   useEffect(() => {
     setLocalContent(content);
   }, [content]);
@@ -25,16 +30,15 @@ export default function AdminPanel({ isOpen = true, onClose }: AdminPanelProps) 
 
   const handleSaveContent = () => {
     alert('İçerik güncellendi (Demo modunda değişiklikler sadece bu sayfada görünür).');
-    // Not: Gerçek bir API bağladığınızda burada updateContent kullanılacaktır.
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-end">
       <div className="bg-white w-full max-w-2xl h-full overflow-y-auto p-8 shadow-2xl">
         <div className="flex justify-between items-center mb-8 border-b pb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Abdullah Usta Yönetim Paneli</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Yönetim Paneli</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-red-600">
-            <i className="ri-close-line text-3xl"></i>
+            Kapat ✕
           </button>
         </div>
 
@@ -48,7 +52,7 @@ export default function AdminPanel({ isOpen = true, onClose }: AdminPanelProps) 
                 <input 
                   type="text" 
                   className="w-full border p-2 rounded-lg" 
-                  value={localContent.restaurantName}
+                  value={localContent.restaurantName || ''}
                   onChange={(e) => setLocalContent({...localContent, restaurantName: e.target.value})}
                 />
               </div>
@@ -56,7 +60,7 @@ export default function AdminPanel({ isOpen = true, onClose }: AdminPanelProps) 
                 <label className="block text-sm font-semibold mb-1">Adres</label>
                 <textarea 
                   className="w-full border p-2 rounded-lg" 
-                  value={localContent.address}
+                  value={localContent.address || ''}
                   onChange={(e) => setLocalContent({...localContent, address: e.target.value})}
                 />
               </div>
@@ -66,7 +70,7 @@ export default function AdminPanel({ isOpen = true, onClose }: AdminPanelProps) 
                   <input 
                     type="text" 
                     className="w-full border p-2 rounded-lg" 
-                    value={localContent.phone}
+                    value={localContent.phone || ''}
                     onChange={(e) => setLocalContent({...localContent, phone: e.target.value})}
                   />
                 </div>
@@ -75,7 +79,7 @@ export default function AdminPanel({ isOpen = true, onClose }: AdminPanelProps) 
                   <input 
                     type="text" 
                     className="w-full border p-2 rounded-lg" 
-                    value={localContent.whatsapp}
+                    value={localContent.whatsapp || ''}
                     onChange={(e) => setLocalContent({...localContent, whatsapp: e.target.value})}
                   />
                 </div>
