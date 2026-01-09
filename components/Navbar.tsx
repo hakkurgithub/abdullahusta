@@ -25,7 +25,6 @@ export default function Navbar() {
     { name: "Menü", href: "/menu" },
     { name: "Hakkımızda", href: "/about" },
     { name: "İletişim", href: "/contact" },
-    { name: "Rezervasyon", href: "/reservation" },
   ];
 
   const isActive = (path: string) => pathname === path;
@@ -34,6 +33,7 @@ export default function Navbar() {
     <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-md py-2" : "bg-transparent py-4"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
+          {/* LOGO */}
           <Link href="/" className="flex-shrink-0 flex items-center">
             <div className={`relative transition-all duration-300 ${scrolled ? 'w-12 h-12' : 'w-16 h-16'}`}>
               <Image
@@ -46,6 +46,7 @@ export default function Navbar() {
             </div>
           </Link>
 
+          {/* MASAÜSTÜ MENÜ */}
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
@@ -61,6 +62,7 @@ export default function Navbar() {
             ))}
           </div>
 
+          {/* SAĞ TARAF BUTONLAR */}
           <div className="hidden md:flex items-center gap-4">
             <Link href="/cart" className="relative group">
               <div className={`p-2 rounded-full transition-colors ${scrolled ? 'bg-gray-100 text-gray-700 group-hover:text-red-600' : 'bg-white/10 text-white group-hover:bg-white/20'}`}>
@@ -77,6 +79,7 @@ export default function Navbar() {
             </Link>
           </div>
 
+          {/* MOBİL MENÜ BUTONU */}
           <div className="md:hidden flex items-center gap-4">
             <Link href="/cart" className={`relative p-2 ${scrolled ? 'text-gray-700' : 'text-white'}`}>
               <span className="text-xl">🛒</span>
@@ -95,6 +98,7 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* MOBİL MENÜ İÇERİK */}
       {isOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100">
           <div className="px-4 pt-4 pb-6 space-y-3">
