@@ -1,45 +1,89 @@
 'use client';
+
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const router = useRouter();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Burada API çağrısı yapılacak (bir sonraki adımda API'yi yazacağız)
-    alert("Giriş işlemi yakında aktif olacak!"); 
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Giriş başarısız');
+      }
+
+      // Başarılı giriş
+      alert(`Hoş geldin ${data.user.name}!`);
+      
+      // Eğer admin ise yönetim paneline, değilse ana sayfaya yönlendir
+      if (data.user.role === 'admin') {
+        router.push('/admin'); // Bunu birazdan yapacağız
+      } else {
+        router.push('/');
+      }
+      
+      // Sayfayı yenile ki menüdeki "Giriş Yap" butonu değişsin
+      setTimeout(() => {
+        window.location.reload(); 
+      }, 500);
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Hesabınıza Giriş Yapın</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Tekrar Hoş Geldiniz</h2>
+          <p className="mt-2 text-sm text-gray-600">Hesabınıza giriş yapın</p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="rounded-md shadow-sm -space-y-px">
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            {error}
+          </div>
+        )}
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm space-y-4">
             <div>
               <input
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
-                placeholder="E-posta adresi"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                placeholder="E-posta Adresi"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
               />
             </div>
             <div>
               <input
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
                 placeholder="Şifre"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
               />
             </div>
           </div>
@@ -47,16 +91,17 @@ export default function Login() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
             >
-              Giriş Yap
+              {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
             </button>
           </div>
-          
-          <div className="text-center mt-4">
-             <Link href="/register" className="text-sm text-red-600 hover:text-red-500">
-               Hesabınız yok mu? Kayıt Olun
-             </Link>
+
+          <div className="text-center">
+            <Link href="/register" className="text-sm text-red-600 hover:text-red-500 font-medium">
+              Hesabınız yok mu? Kayıt Olun
+            </Link>
           </div>
         </form>
       </div>
