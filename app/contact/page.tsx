@@ -31,7 +31,7 @@ export default function Contact() {
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 group">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-2xl group-hover:bg-red-600 group-hover:text-white transition-colors">
-                  í³
+                  ğŸ“
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Adres</h3>
               </div>
@@ -47,7 +47,7 @@ export default function Contact() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-md hover:shadow-lg w-full sm:w-auto"
                 >
-                  <span>í·ºï¸</span>
+                  <span>ğŸ—ºï¸</span>
                   <span>Adrese Git (Haritada AÃ§)</span>
                 </a>
               </div>
@@ -57,7 +57,7 @@ export default function Contact() {
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 group">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-2xl group-hover:bg-red-600 group-hover:text-white transition-colors">
-                  í³
+                  ğŸ“
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Telefon</h3>
               </div>
@@ -133,7 +133,7 @@ export default function Contact() {
                 className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <span>WhatsApp Ä°le GÃ¶nder</span>
-                <span className="text-xl">í²¬</span>
+                <span className="text-xl">ğŸ’¬</span>
               </button>
             </form>
           </div>
