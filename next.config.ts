@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // output: "export", // BU SATIRI KALDIRDIK (Dinamik özellikler için gerekli)
+  // output: "export" satırını tamamen kaldırdık.
+  // Artık Vercel, dinamik API rotalarımızı (Login, Admin vb.) çalıştırabilir.
+  
   images: {
     unoptimized: true,
     remotePatterns: [
