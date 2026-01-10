@@ -1,117 +1,126 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
-import { useCart } from "./CartProvider";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { getTotalItems } = useCart();
+
+  // Ana sayfada miyiz kontrolu
+  const isHomePage = pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => setIsOpen(false), [pathname]);
+  // RENK MANTIGI:
+  // 1. Eger Ana Sayfadaysak VE henuz asagi kaydirmadiysak -> Seffaf Arkaplan + Beyaz Yazi
+  // 2. Diger tum durumlarda (Iletisim sayfasi veya scroll yapilmis ana sayfa) -> Beyaz Arkaplan + Siyah Yazi
+  const isTransparent = isHomePage && !isScrolled;
 
-  const navigation = [
-    { name: "Ana Sayfa", href: "/" },
-    { name: "Menü", href: "/menu" },
-    { name: "Hakkımızda", href: "/about" },
-    { name: "İletişim", href: "/contact" },
-  ];
+  const navClasses = isTransparent
+    ? 'bg-transparent text-white'
+    : 'bg-white text-gray-900 shadow-md';
 
-  const isActive = (path: string) => pathname === path;
+  const linkClasses = isTransparent
+    ? 'hover:text-red-400'
+    : 'hover:text-red-600';
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-md py-2" : "bg-transparent py-4"}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${navClasses}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center h-20">
+          
           {/* LOGO */}
-          <Link href="/" className="flex-shrink-0 flex items-center">
-            <div className={`relative transition-all duration-300 ${scrolled ? 'w-12 h-12' : 'w-16 h-16'}`}>
-              <Image
-                src="https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta-logo.jpg"
-                alt="Abdullah Usta Logo"
-                fill
-                className="rounded-full object-cover shadow-sm"
-                priority
-              />
+          <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isTransparent ? 'bg-white/10' : 'bg-red-600'}`}>
+              <span className={`text-2xl font-bold ${isTransparent ? 'text-white' : 'text-white'}`}>A</span>
             </div>
+            <span className={`font-bold text-xl tracking-wider ${isTransparent ? 'text-white' : 'text-gray-900'}`}>
+              {process.env.NEXT_PUBLIC_RESTAURANT_NAME || 'ABDULLAH USTA'}
+            </span>
           </Link>
 
-          {/* MASAÜSTÜ MENÜ */}
+          {/* MASAUSTU MENU */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`text-sm font-bold transition-colors relative group ${isActive(item.href)
-                  ? scrolled ? "text-red-600" : "text-white"
-                  : scrolled ? "text-gray-700 hover:text-red-600" : "text-white/90 hover:text-white"
-                }`}>
-                {item.name}
-                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 transition-all group-hover:w-full ${isActive(item.href) ? 'w-full' : ''}`}></span>
-              </Link>
-            ))}
-          </div>
-
-          {/* SAĞ TARAF BUTONLAR */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/cart" className="relative group">
-              <div className={`p-2 rounded-full transition-colors ${scrolled ? 'bg-gray-100 text-gray-700 group-hover:text-red-600' : 'bg-white/10 text-white group-hover:bg-white/20'}`}>
-                <span className="text-xl">🛒</span>
-                {getTotalItems() > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
-                    {getTotalItems()}
-                  </span>
-                )}
-              </div>
-            </Link>
-            <Link href="/reservation" className={`px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg active:scale-95 ${scrolled ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-white text-red-600 hover:bg-gray-100'}`}>
+            <Link href="/" className={`font-medium transition-colors ${linkClasses}`}>Ana Sayfa</Link>
+            <Link href="/menu" className={`font-medium transition-colors ${linkClasses}`}>Menü</Link>
+            <Link href="/contact" className={`font-medium transition-colors ${linkClasses}`}>İletişim</Link>
+            
+            {/* Rezervasyon Butonu */}
+            <Link 
+              href="/contact" 
+              className={`px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 ${
+                isTransparent 
+                  ? 'bg-white text-gray-900 hover:bg-gray-100' 
+                  : 'bg-red-600 text-white hover:bg-red-700'
+              }`}
+            >
               Rezervasyon
             </Link>
           </div>
 
-          {/* MOBİL MENÜ BUTONU */}
-          <div className="md:hidden flex items-center gap-4">
-            <Link href="/cart" className={`relative p-2 ${scrolled ? 'text-gray-700' : 'text-white'}`}>
-              <span className="text-xl">🛒</span>
-              {getTotalItems() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
-                  {getTotalItems()}
-                </span>
-              )}
-            </Link>
+          {/* MOBIL MENU BUTONU */}
+          <div className="md:hidden flex items-center">
             <button
-              onClick={() => setIsOpen(!isOpen)}
-              className={`p-2 rounded-md transition-colors ${scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}>
-              <span className="text-2xl">{isOpen ? "✕" : "☰"}</span>
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-md focus:outline-none"
+            >
+              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
             </button>
           </div>
         </div>
       </div>
 
-      {/* MOBİL MENÜ İÇERİK */}
-      {isOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100">
-          <div className="px-4 pt-4 pb-6 space-y-3">
-            {navigation.map((item) => (
+      {/* MOBIL MENU ACILIR KUTUSU */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white shadow-xl border-t border-gray-100 absolute w-full left-0">
+          <div className="px-4 pt-2 pb-6 space-y-2">
+            <Link 
+              href="/" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors"
+            >
+              Ana Sayfa
+            </Link>
+            <Link 
+              href="/menu" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors"
+            >
+              Menü
+            </Link>
+            <Link 
+              href="/contact" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors"
+            >
+              İletişim
+            </Link>
+            <div className="pt-4">
               <Link
-                key={item.name}
-                href={item.href}
-                className={`block px-4 py-3 rounded-xl text-base font-bold transition-colors ${isActive(item.href) ? "bg-red-50 text-red-600" : "text-gray-700 hover:bg-gray-50"}`}>
-                {item.name}
-              </Link>
-            ))}
-            <div className="pt-4 border-t border-gray-100">
-              <Link href="/reservation" className="block w-full text-center bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all">
+                href="/contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block w-full text-center px-4 py-4 rounded-xl font-bold bg-red-600 text-white hover:bg-red-700 shadow-lg transition-all"
+              >
                 Rezervasyon Yap
               </Link>
             </div>
