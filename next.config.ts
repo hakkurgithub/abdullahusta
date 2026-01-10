@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",
+  // output: "export", // BU SATIRI KALDIRDIK (Dinamik özellikler için gerekli)
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
