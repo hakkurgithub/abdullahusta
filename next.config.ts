@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // output: "export" satırını tamamen kaldırdık.
-  // Artık Vercel, dinamik API rotalarımızı (Login, Admin vb.) çalıştırabilir.
+  // output: "export", // BU SATIR ARTIK YOK!
   
   images: {
     unoptimized: true,
