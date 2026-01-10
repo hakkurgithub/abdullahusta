@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // NOT: output: "export" satırı BURADA YOK. 
-  // Bu sayede Vercel sunucu özelliklerini (API, Veritabanı) kullanabilir.
+  // NOT: 'output: export' BURADA YOK!
+  // Bu sayede Admin paneli ve veritabanı çalışabilir.
   
   images: {
     unoptimized: true,
