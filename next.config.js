@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: "export", // BU SATIR ARTIK YOK. Sildik.
+  // NOT: output: "export" satırı BURADA YOK. 
+  // Bu sayede Vercel sunucu özelliklerini (API, Veritabanı) kullanabilir.
   
   images: {
     unoptimized: true,
@@ -21,4 +22,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
