@@ -1,7 +1,6 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  // output: "export", // BU SATIR ARTIK YOK!
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // output: "export", // BU SATIR ARTIK YOK. Sildik.
   
   images: {
     unoptimized: true,
