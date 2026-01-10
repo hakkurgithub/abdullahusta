@@ -7,76 +7,92 @@ import { usePathname } from 'next/navigation';
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Hangi sayfada oldugumuzu aliyoruz
   const pathname = usePathname();
-
-  // Ana sayfada miyiz kontrolu
   const isHomePage = pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // RENK MANTIGI:
-  // 1. Eger Ana Sayfadaysak VE henuz asagi kaydirmadiysak -> Seffaf Arkaplan + Beyaz Yazi
-  // 2. Diger tum durumlarda (Iletisim sayfasi veya scroll yapilmis ana sayfa) -> Beyaz Arkaplan + Siyah Yazi
-  const isTransparent = isHomePage && !isScrolled;
-
-  const navClasses = isTransparent
-    ? 'bg-transparent text-white'
-    : 'bg-white text-gray-900 shadow-md';
-
-  const linkClasses = isTransparent
-    ? 'hover:text-red-400'
-    : 'hover:text-red-600';
+  // --- KRITIK RENK MANTIGI ---
+  // Navigasyonun "Dolu" (Beyaz Zemin, Siyah Yazi) gorunmesi gereken durumlar:
+  // 1. Ana sayfada degilsek (Orn: /contact, /menu) -> KESINLIKLE DOLU OLSUN
+  // 2. Ana sayfadaysak AMA asagi kaydirdiysak -> DOLU OLSUN
+  const shouldBeSolid = !isHomePage || isScrolled;
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${navClasses}`}>
+    <nav 
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        shouldBeSolid 
+          ? 'bg-white text-gray-900 shadow-md' // Dolu durum: Beyaz Zemin, Siyah Yazi
+          : 'bg-transparent text-white'        // Seffaf durum: Seffaf Zemin, Beyaz Yazi
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
           {/* LOGO */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isTransparent ? 'bg-white/10' : 'bg-red-600'}`}>
-              <span className={`text-2xl font-bold ${isTransparent ? 'text-white' : 'text-white'}`}>A</span>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+              shouldBeSolid ? 'bg-red-600 text-white' : 'bg-white/10 text-white'
+            }`}>
+              <span className="text-2xl font-bold">A</span>
             </div>
-            <span className={`font-bold text-xl tracking-wider ${isTransparent ? 'text-white' : 'text-gray-900'}`}>
+            <span className={`font-bold text-xl tracking-wider ${
+              shouldBeSolid ? 'text-gray-900' : 'text-white'
+            }`}>
               {process.env.NEXT_PUBLIC_RESTAURANT_NAME || 'ABDULLAH USTA'}
             </span>
           </Link>
 
           {/* MASAUSTU MENU */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className={`font-medium transition-colors ${linkClasses}`}>Ana Sayfa</Link>
-            <Link href="/menu" className={`font-medium transition-colors ${linkClasses}`}>Menü</Link>
-            <Link href="/contact" className={`font-medium transition-colors ${linkClasses}`}>İletişim</Link>
+            {['Ana Sayfa', 'Menü', 'Hakkımızda', 'İletişim'].map((item) => {
+              const href = item === 'Ana Sayfa' ? '/' : `/${item.toLowerCase().replace('ü', 'u').replace('ı', 'i').replace('ş', 's').replace(' ', '-')}`;
+              const isActive = pathname === href;
+              
+              return (
+                <Link 
+                  key={item}
+                  href={href} 
+                  className={`font-medium transition-colors ${
+                    isActive 
+                      ? 'text-red-600 font-bold' 
+                      : (shouldBeSolid ? 'text-gray-700 hover:text-red-600' : 'text-white/90 hover:text-white')
+                  }`}
+                >
+                  {item}
+                </Link>
+              );
+            })}
             
             {/* Rezervasyon Butonu */}
             <Link 
               href="/contact" 
-              className={`px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 ${
-                isTransparent 
-                  ? 'bg-white text-gray-900 hover:bg-gray-100' 
-                  : 'bg-red-600 text-white hover:bg-red-700'
+              className={`px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 shadow-sm ${
+                shouldBeSolid 
+                  ? 'bg-red-600 text-white hover:bg-red-700' 
+                  : 'bg-white text-gray-900 hover:bg-gray-100'
               }`}
             >
               Rezervasyon
             </Link>
           </div>
 
-          {/* MOBIL MENU BUTONU */}
+          {/* MOBIL MENU BUTONU (Hamburger) */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md focus:outline-none"
+              className={`p-2 rounded-md focus:outline-none ${
+                shouldBeSolid ? 'text-gray-900' : 'text-white'
+              }`}
             >
               <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMobileMenuOpen ? (
@@ -92,29 +108,21 @@ export default function Navbar() {
 
       {/* MOBIL MENU ACILIR KUTUSU */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-xl border-t border-gray-100 absolute w-full left-0">
+        <div className="md:hidden bg-white shadow-xl border-t border-gray-100 absolute w-full left-0 top-20">
           <div className="px-4 pt-2 pb-6 space-y-2">
-            <Link 
-              href="/" 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors"
-            >
-              Ana Sayfa
-            </Link>
-            <Link 
-              href="/menu" 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors"
-            >
-              Menü
-            </Link>
-            <Link 
-              href="/contact" 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors"
-            >
-              İletişim
-            </Link>
+            {['Ana Sayfa', 'Menü', 'Hakkımızda', 'İletişim'].map((item) => {
+               const href = item === 'Ana Sayfa' ? '/' : `/${item.toLowerCase().replace('ü', 'u').replace('ı', 'i').replace('ş', 's').replace(' ', '-')}`;
+               return (
+                <Link 
+                  key={item}
+                  href={href} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors border-b border-gray-50 last:border-0"
+                >
+                  {item}
+                </Link>
+               )
+            })}
             <div className="pt-4">
               <Link
                 href="/contact"
