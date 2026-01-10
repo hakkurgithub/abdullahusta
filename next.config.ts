@@ -13,12 +13,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // BU AYARLAR ÇOK ÖNEMLİ:
-  eslint: {
-    ignoreDuringBuilds: true, // Lint (<<) hatalarını yoksay
-  },
   typescript: {
-    ignoreBuildErrors: true, // TypeScript hatalarını yoksay
+    ignoreBuildErrors: true,
   },
 };
 

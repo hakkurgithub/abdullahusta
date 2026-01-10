@@ -1,138 +1,114 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
+import { useState, useTransition, useMemo } from 'react';
+import Image from 'next/image';
+import { MENU_ITEMS, MenuCategory } from '../../lib/menuData';
 import { useCart } from '../../components/CartProvider';
-import { useContent } from '../../hooks/useContent';
-
-interface MenuItem {
-  id: any;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image?: string;
-  rating?: number;
-}
 
 export default function MenuPage() {
-  const [filter, setFilter] = useState<string | "all">("all");
-  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("Kebaplar & Izgaralar");
+  // INP ÇÖZÜMÜ: useTransition kullanıyoruz
+  const [isPending, startTransition] = useTransition();
   const { addItem } = useCart();
-  const { content } = useContent();
 
-  const menuItems: MenuItem[] = content.allMenuItems || [];
+  // Kategorileri veri dosyasından otomatik çıkar
+  const categories = useMemo(() => {
+    const cats = new Set(MENU_ITEMS.map(item => item.category));
+    return Array.from(cats);
+  }, []);
 
-  const filteredItems = menuItems.filter((item) => {
-    const matchCategory = filter === "all" || item.category === filter;
-    const matchSearch =
-      search === "" ||
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.description.toLowerCase().includes(search.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+  // Filtreleme işlemi
+  const filteredItems = useMemo(() => {
+    return MENU_ITEMS.filter(item => item.category === activeCategory);
+  }, [activeCategory]);
 
-  const categories: string[] = ["all", ...Array.from(new Set(menuItems.map(item => item.category)))];
-
-  const handleAddToCart = (item: MenuItem) => {
-    addItem({
-      id: parseInt(item.id),
-      name: item.name,
-      price: item.price,
+  const handleCategoryChange = (category: string) => {
+    // INP ÇÖZÜMÜ: Ağır işlemi (filtrelemeyi) startTransition içine alıyoruz
+    startTransition(() => {
+      setActiveCategory(category);
     });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Menü Başlık Alanı */}
-      <div className="bg-red-700 py-12 text-white text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">Lezzet Menümüz</h1>
-        <p className="opacity-90">Usta ellerden günlük taze hazırlanan lezzetler</p>
-      </div>
+    <div className="min-h-screen bg-white pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Başlık Alanı */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Menümüz</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Geleneksel lezzetler, usta ellerden sofranıza.
+          </p>
+        </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Arama ve Filtreleme */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 bg-white p-4 rounded-xl shadow-sm">
-          <div className="relative flex-1">
-            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input
-              type="text"
-              placeholder="Ürün veya içerik ara..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all text-gray-700"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setFilter(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-                  filter === cat
-                    ? "bg-red-600 text-white shadow-md"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+        {/* Kategori Filtreleri (INP Sorununun Olduğu Yer Burasıydı) */}
+        <div className="flex overflow-x-auto pb-4 mb-8 gap-3 no-scrollbar justify-start md:justify-center">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => handleCategoryChange(category)}
+              className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-all transform active:scale-95 border
+                ${activeCategory === category
+                  ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-200'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
                 }`}
-              >
-                {cat === "all" ? "Tümü" : cat}
-              </button>
-            ))}
-          </div>
+            >
+              {category}
+            </button>
+          ))}
         </div>
 
         {/* Ürün Listesi */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {/* isPending true ise listeyi hafif opak yapıyoruz (Yükleniyor hissi) */}
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
           {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col border border-gray-100 overflow-hidden group"
-            >
-              <div className="relative h-48 overflow-hidden">
-                {item.image && (
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                )}
-                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm">
-                   <div className="flex items-center gap-1">
-                    <i className="ri-star-fill text-yellow-400 text-xs"></i>
-                    <span className="text-xs font-bold text-gray-800">{item.rating || "5.0"}</span>
-                  </div>
-                </div>
-              </div>
+            <div key={item.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full">
               
+              {/* Resim Alanı */}
+              <div className="relative h-56 w-full overflow-hidden bg-gray-100">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                />
+                {item.rating && (
+                  <div className="absolute top-3 right-3 bg-white/95 backdrop-blur px-2 py-1 rounded-lg shadow-sm flex items-center gap-1">
+                    <span className="text-yellow-500 text-xs">⭐</span>
+                    <span className="text-xs font-bold text-gray-800">{item.rating}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* İçerik Alanı */}
               <div className="p-5 flex flex-col flex-grow">
-                <h2 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors">
-                  {item.name}
-                </h2>
-                <p className="text-gray-500 text-sm mb-4 flex-grow line-clamp-2">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-red-600 transition-colors">
+                    {item.name}
+                  </h3>
+                  <span className="text-red-600 font-black text-lg whitespace-nowrap ml-2">
+                    {item.price} ₺
+                  </span>
+                </div>
+                
+                <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow">
                   {item.description}
                 </p>
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
-                  <span className="text-red-600 font-black text-xl">{item.price} ₺</span>
-                  <button
-                    onClick={() => handleAddToCart(item)}
-                    className="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200 font-bold cursor-pointer"
-                  >
-                    + Ekle
-                  </button>
-                </div>
+
+                <button
+                  onClick={() => addItem({ id: parseInt(item.id), name: item.name, price: item.price })}
+                  className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-gray-200"
+                >
+                  <span>Sepete Ekle</span>
+                  <span className="bg-white/20 px-1.5 py-0.5 rounded text-xs">+</span>
+                </button>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Sonuç Bulunamadı */}
-        {filteredItems.length === 0 && (
-          <div className="text-center py-20">
-            <i className="ri-search-eye-line text-6xl text-gray-300 mb-4 block"></i>
-            <p className="text-gray-500 text-lg">Aradığınız kriterlere uygun ürün bulunamadı.</p>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 }

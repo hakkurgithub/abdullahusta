@@ -2,147 +2,141 @@
 
 import { useState } from 'react';
 
-export default function ContactPage() {
+export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
-    subject: '',
-    message: '',
+    message: ''
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
-  // Doğru Google Maps Bağlantısı
-  const mapLink = "https://www.google.com/maps/place/?q=place_id:ChIJJWhsEXqhyhQRDGKx44DnLiI";
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    // Form gönderme simülasyonu
-    setTimeout(() => {
-      setSubmitMessage({
-        type: 'success',
-        text: 'Mesajınız başarıyla iletildi! En kısa sürede size dönüş yapacağız.',
-      });
-      setIsSubmitting(false);
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    }, 1500);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const text = `Merhaba, ben ${formData.name}. %0AE-posta: ${formData.email} %0A%0AMesajım: ${formData.message}`;
+    window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${text}`, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <section className="bg-red-700 py-16 text-white text-center">
-        <h1 className="text-4xl font-extrabold mb-4 uppercase tracking-tight">İletişim</h1>
-        <p className="text-red-100 max-w-2xl mx-auto px-4">
-          Abdullah Usta lezzetleri ve hizmetiyle ilgili her türlü sorunuz için yanınızdayız.
-        </p>
-      </section>
+    <div className="min-h-screen bg-gray-50 py-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">İletişim</h1>
+          <p className="text-lg text-gray-600">Sorularınız ve rezervasyonlarınız için bize ulaşın.</p>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          
-          <div className="lg:col-span-1 space-y-6">
-            {/* Adres Kartı */}
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* İletişim Bilgileri */}
+          <div className="space-y-8">
+            
+            {/* ADRES KARTI VE BUTONU */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 group">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600">
-                  <i className="ri-map-pin-2-fill text-2xl"></i>
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-2xl group-hover:bg-red-600 group-hover:text-white transition-colors">
+                  ���
                 </div>
-                <h3 className="font-bold text-gray-800 text-lg">Adres</h3>
+                <h3 className="text-xl font-bold text-gray-900">Adres</h3>
               </div>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                Avcılar Üniversite Mah. Mareşal Cad. No:22<br />
-                İstanbul, Turkey 34320
+              
+              <p className="text-gray-600 ml-16 mb-6">
+                {process.env.NEXT_PUBLIC_ADDRESS}
               </p>
-              <a 
-                href={mapLink} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-red-600 font-bold hover:underline flex items-center gap-1"
-              >
-                <i className="ri-map-2-line"></i> Haritada Yol Tarifi Al
-              </a>
-            </div>
 
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600">
-                  <i className="ri-phone-fill text-2xl"></i>
-                </div>
-                <h3 className="font-bold text-gray-800 text-lg">Telefon</h3>
-              </div>
-              <p className="text-gray-600">Sabit: 0212 812 02 44</p>
-              <p className="text-gray-900 font-bold mt-1">WhatsApp: 0544 202 42 44</p>
-            </div>
-
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600">
-                  <i className="ri-mail-fill text-2xl"></i>
-                </div>
-                <h3 className="font-bold text-gray-800 text-lg">E-posta</h3>
-              </div>
-              <p className="text-gray-600">burakkeskin4244@gmail.com</p>
-            </div>
-          </div>
-
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-800 mb-8">Bize Mesaj Gönderin</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Adınız Soyadınız"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                    required
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="E-posta Adresiniz"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                    required
-                  />
-                </div>
-                <textarea
-                  name="message"
-                  placeholder="Mesajınız..."
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  rows={5}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 outline-none transition-all resize-none"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-red-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-red-700 transition-all shadow-lg shadow-red-100 active:scale-95 disabled:bg-gray-400 cursor-pointer"
+              <div className="ml-16">
+                <a 
+                  href={process.env.NEXT_PUBLIC_MAPS_URL} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-md hover:shadow-lg w-full sm:w-auto"
                 >
-                  {isSubmitting ? 'Gönderiliyor...' : 'Mesajı Gönder'}
-                </button>
-                {submitMessage && (
-                  <div className={`mt-4 p-4 rounded-xl text-center font-bold ${submitMessage.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                    {submitMessage.text}
-                  </div>
-                )}
-              </form>
+                  <span>���️</span>
+                  <span>Adrese Git (Haritada Aç)</span>
+                </a>
+              </div>
             </div>
+
+            {/* Telefon Kartı */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-2xl group-hover:bg-red-600 group-hover:text-white transition-colors">
+                  ���
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Telefon</h3>
+              </div>
+              <div className="ml-16 space-y-2">
+                <a href={`tel:${process.env.NEXT_PUBLIC_PHONE_NUMBER}`} className="block text-gray-600 hover:text-red-600 hover:scale-105 transition-all origin-left font-medium">
+                  Sabit: {process.env.NEXT_PUBLIC_PHONE_NUMBER}
+                </a>
+                <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`} target="_blank" className="block text-gray-600 hover:text-green-600 hover:scale-105 transition-all origin-left font-medium">
+                  WhatsApp: 0544 202 42 44
+                </a>
+              </div>
+            </div>
+
+            {/* E-posta Kartı */}
+            <a 
+              href={`mailto:${process.env.NEXT_PUBLIC_EMAIL}`}
+              className="block bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-2xl group-hover:bg-red-600 group-hover:text-white transition-colors">
+                  ✉️
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">E-posta</h3>
+              </div>
+              <p className="text-gray-600 ml-16 group-hover:text-red-600 transition-colors">
+                {process.env.NEXT_PUBLIC_EMAIL}
+              </p>
+            </a>
           </div>
 
+          {/* İletişim Formu */}
+          <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">WhatsApp'tan Hızlı Mesaj</h3>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Adınız Soyadınız</label>
+                <input
+                  type="text"
+                  id="name"
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                  placeholder="Adınız"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">E-posta Adresiniz</label>
+                <input
+                  type="email"
+                  id="email"
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                  placeholder="ornek@email.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                />
+              </div>
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Mesajınız</label>
+                <textarea
+                  id="message"
+                  rows={4}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all resize-none"
+                  placeholder="Size nasıl yardımcı olabiliriz?"
+                  value={formData.message}
+                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <span>WhatsApp İle Gönder</span>
+                <span className="text-xl">���</span>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
