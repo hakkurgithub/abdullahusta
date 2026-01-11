@@ -14,9 +14,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // eslint ayari buradan silindi, artik uyari vermeyecek.
 };
 
 module.exports = nextConfig;
