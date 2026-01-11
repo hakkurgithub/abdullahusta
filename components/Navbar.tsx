@@ -9,7 +9,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const pathname = usePathname();
-  // Sadece ana sayfada miyiz?
+  // Sadece ana sayfada miyiz? (URL tam olarak "/" mi?)
   const isHomePage = pathname === '/';
 
   useEffect(() => {
@@ -20,67 +20,61 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // --- KESİN ÇÖZÜM MANTIĞI ---
-  // Varsayılan olarak (her sayfa için): Arka plan BEYAZ, Yazı SİYAH (Görünür)
-  // Sadece: Ana Sayfadaysak VE Scroll yapmadıysak -> Şeffaf/Beyaz yap.
-  
-  const isTransparentMode = isHomePage && !isScrolled;
+  // --- KESİN KARAR MEKANİZMASI ---
+  // Şeffaf mod sadece ve sadece: Ana Sayfadaysak VE Scroll yapmadıysak geçerli.
+  const isTransparent = isHomePage && !isScrolled;
 
-  // Renk sınıfları (Zorlayıcı ! işaretleri ile)
-  const navClasses = isTransparentMode
-    ? 'bg-transparent text-white' 
-    : 'bg-white !text-black shadow-md border-b border-gray-100'; // !text-black ile siyahı zorluyoruz
-
-  // Link renkleri
-  const linkClasses = isTransparentMode
-    ? 'text-white hover:text-red-400'
-    : '!text-black hover:text-red-600'; // !text-black ile siyahı zorluyoruz
-
-  // Logo kutusu
-  const logoBoxClass = isTransparentMode
-    ? 'bg-white/20 text-white'
-    : 'bg-red-600 text-white';
-
-  // Logo yazısı
-  const logoTextClass = isTransparentMode
-    ? 'text-white'
-    : '!text-black';
-
-  // Hamburger Menü İkonu Rengi
-  const hamburgerColor = isTransparentMode ? 'text-white' : '!text-black';
+  // Renkleri JavaScript değişkeni olarak tutuyoruz (Inline Style için)
+  const textColor = isTransparent ? '#ffffff' : '#000000'; // Beyaz veya Siyah
+  const bgColor = isTransparent ? 'transparent' : '#ffffff'; // Şeffaf veya Beyaz
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${navClasses}`}>
+    <nav 
+      className="fixed w-full z-50 transition-all duration-300 shadow-sm"
+      style={{ backgroundColor: bgColor }} // Arka planı zorla ayarla
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
           {/* LOGO */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${logoBoxClass}`}>
+            <div 
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
+              style={{ 
+                backgroundColor: isTransparent ? 'rgba(255,255,255,0.2)' : '#DC2626', // Şeffaf beyaz veya Kırmızı
+                color: '#ffffff' // Logo içi her zaman beyaz
+              }}
+            >
               <span className="text-2xl font-bold">A</span>
             </div>
-            <span className={`font-bold text-xl tracking-wider ${logoTextClass}`}>
+            <span 
+              className="font-bold text-xl tracking-wider"
+              style={{ color: isTransparent ? '#ffffff' : '#111827' }} // Yazı rengi zorla
+            >
               {process.env.NEXT_PUBLIC_RESTAURANT_NAME || 'ABDULLAH USTA'}
             </span>
           </Link>
 
           {/* MASAÜSTÜ MENÜ */}
           <div className="hidden md:flex items-center space-x-8">
-            {['Ana Sayfa', 'Menü', 'Hakkımızda', 'İletişim'].map((item) => {
-              const href = item === 'Ana Sayfa' ? '/' : `/${item.toLowerCase().replace('ü', 'u').replace('ı', 'i').replace('ş', 's').replace(' ', '-')}`;
-              const isActive = pathname === href;
+            {/* Linkleri manuel ve doğru tanımlıyoruz */}
+            {[
+              { name: 'Ana Sayfa', path: '/' },
+              { name: 'Menü', path: '/menu' },
+              { name: 'İletişim', path: '/contact' }
+            ].map((item) => {
+              const isActive = pathname === item.path;
               
               return (
                 <Link 
-                  key={item}
-                  href={href} 
-                  className={`font-medium transition-colors ${
-                    isActive 
-                      ? 'text-red-600 font-bold' 
-                      : linkClasses
-                  }`}
+                  key={item.name}
+                  href={item.path} 
+                  className={`font-medium transition-colors hover:text-red-500 ${isActive ? 'font-bold' : ''}`}
+                  style={{ 
+                    color: isActive ? '#DC2626' : textColor // Aktifse kırmızı, değilse duruma göre (siyah/beyaz)
+                  }}
                 >
-                  {item}
+                  {item.name}
                 </Link>
               );
             })}
@@ -88,19 +82,26 @@ export default function Navbar() {
             {/* Rezervasyon Butonu */}
             <Link 
               href="/contact" 
-              className={`px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 shadow-sm ${
-                isTransparentMode 
-                  ? 'bg-white text-gray-900 hover:bg-gray-100' 
-                  : 'bg-red-600 text-white hover:bg-red-700'
-              }`}
+              className="px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 shadow-sm"
+              style={{
+                backgroundColor: isTransparent ? '#ffffff' : '#DC2626',
+                color: isTransparent ? '#111827' : '#ffffff'
+              }}
             >
               Rezervasyon
             </Link>
 
-            {/* Sepet İkonu */}
-             <Link href="/login" className={`p-2 transition-colors ${linkClasses}`}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+             {/* Sepet / Login İkonu */}
+             <Link href="/login" className="p-2 transition-colors">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-6 w-6" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                  style={{ color: textColor }} // İkon rengini zorla
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
              </Link>
           </div>
@@ -109,7 +110,8 @@ export default function Navbar() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 rounded-md focus:outline-none ${hamburgerColor}`}
+              className="p-2 rounded-md focus:outline-none"
+              style={{ color: textColor }} // Hamburger ikon rengini zorla
             >
               <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMobileMenuOpen ? (
@@ -127,19 +129,20 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white shadow-xl border-t border-gray-100 absolute w-full left-0 top-20 z-50">
           <div className="px-4 pt-2 pb-6 space-y-2">
-            {['Ana Sayfa', 'Menü', 'Hakkımızda', 'İletişim'].map((item) => {
-               const href = item === 'Ana Sayfa' ? '/' : `/${item.toLowerCase().replace('ü', 'u').replace('ı', 'i').replace('ş', 's').replace(' ', '-')}`;
-               return (
+            {[
+              { name: 'Ana Sayfa', path: '/' },
+              { name: 'Menü', path: '/menu' },
+              { name: 'İletişim', path: '/contact' }
+            ].map((item) => (
                 <Link 
-                  key={item}
-                  href={href} 
+                  key={item.name}
+                  href={item.path} 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block px-3 py-4 rounded-xl text-base font-medium text-gray-900 hover:bg-red-50 hover:text-red-600 transition-colors border-b border-gray-50 last:border-0"
                 >
-                  {item}
+                  {item.name}
                 </Link>
-               )
-            })}
+            ))}
             <div className="pt-4">
               <Link
                 href="/contact"
