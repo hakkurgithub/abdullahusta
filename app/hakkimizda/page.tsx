@@ -5,7 +5,7 @@ import React from 'react';
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section - Hakkımızda Sayfasına Özel */}
+      {/* Hero Section */}
       <section className="relative h-64 bg-red-700 flex items-center justify-center text-white">
         <div className="text-center">
           <h1 className="text-5xl font-bold mb-2">Hakkımızda</h1>
@@ -14,7 +14,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* İçerik Alanı */}
+      {/* Icerik Alani */}
       <main className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
@@ -55,8 +55,7 @@ export default function AboutPage() {
         <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-              {/* Emoji ikon kullandik cunku remixicon kutuphanesi yuklu olmayabilir */}
-              <span>���</span>
+              <span>🏅</span>
             </div>
             <h3 className="text-xl font-bold mb-3">Kalite Politikamız</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -76,7 +75,7 @@ export default function AboutPage() {
 
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-               <span>���</span>
+               <span>😊</span>
             </div>
             <h3 className="text-xl font-bold mb-3">Müşteri Memnuniyeti</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
