@@ -41,7 +41,7 @@ export default function AboutPage() {
           
           <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl">
             <img 
-              src="https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta- oncu.jpg" 
+              src="https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta-oncu.jpg" 
               alt="Abdullah Usta Restoran" 
               className="w-full h-full object-cover"
             />
@@ -55,7 +55,8 @@ export default function AboutPage() {
         <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-              <i className="ri-medal-line"></i>
+              {/* Emoji ikon kullandik cunku remixicon kutuphanesi yuklu olmayabilir */}
+              <span>ÌøÖ</span>
             </div>
             <h3 className="text-xl font-bold mb-3">Kalite Politikamƒ±z</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -65,7 +66,7 @@ export default function AboutPage() {
           
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-              <i className="ri-heart-pulse-line"></i>
+               <span>‚ù§Ô∏è</span>
             </div>
             <h3 className="text-xl font-bold mb-3">Tazelik S√∂z√º</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -75,7 +76,7 @@ export default function AboutPage() {
 
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-              <i className="ri-user-smile-line"></i>
+               <span>Ì∏ä</span>
             </div>
             <h3 className="text-xl font-bold mb-3">M√º≈üteri Memnuniyeti</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
