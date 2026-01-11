@@ -51,11 +51,11 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Vizyon & Misyon - Emojiler HTML Code Olarak */}
+        {/* Vizyon & Misyon */}
         <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-              <span>&#127941;</span> {/* Madalya */}
+              <span>&#127941;</span> {/* Madalya Emojisi */}
             </div>
             <h3 className="text-xl font-bold mb-3">Kalite Politikam&#305;z</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -65,7 +65,7 @@ export default function AboutPage() {
           
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-               <span>&#10084;&#65039;</span> {/* Kalp */}
+               <span>&#10084;&#65039;</span> {/* Kalp Emojisi */}
             </div>
             <h3 className="text-xl font-bold mb-3">Tazelik S&#246;z&#252;</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -75,7 +75,7 @@ export default function AboutPage() {
 
           <div className="bg-gray-50 p-8 rounded-xl border border-gray-100">
             <div className="text-red-600 text-3xl mb-4">
-               <span>&#128522;</span> {/* Gulucuk */}
+               <span>&#128522;</span> {/* Gulucuk Emojisi */}
             </div>
             <h3 className="text-xl font-bold mb-3">M&#252;&#351;teri Memnuniyeti</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
