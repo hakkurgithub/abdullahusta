@@ -1,15 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // TypeScript hatalarını görmezden gel (Build sırasında)
+  // TypeScript hatalarını görmezden gel (Build sırasında durmasın)
   typescript: {
     ignoreBuildErrors: true,
   },
-  // ESLint uyarılarını görmezden gel (Build sırasında)
+  // ESLint uyarılarını görmezden gel
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Resim optimizasyonu için izin verilen domainler
+  // Resimlerin her yerden yüklenmesine izin ver (Hata çıkmasın)
   images: {
     remotePatterns: [
       {
