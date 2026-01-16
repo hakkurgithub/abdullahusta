@@ -18,3 +18,4 @@ yarn-error.log*
 pnpm-debug.log*
 .vscode/
 .idea/
+/lib/generated/prisma

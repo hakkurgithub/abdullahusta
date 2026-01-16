@@ -41,7 +41,7 @@ export default function AboutPage() {
           
           <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl">
             <img 
-              src="https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta-oncu.jpg" 
+              src="https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta- oncu.jpg" 
               alt="Abdullah Usta Restoran" 
               className="w-full h-full object-cover"
             />
