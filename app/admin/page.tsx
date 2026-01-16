@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
+import Link from 'next/link';
 
 export default async function AdminDashboard() {
-  // Istatistikleri veritabanindan cekelim
   const userCount = await prisma.user.count();
   const productCount = await prisma.product.count();
   const orderCount = await prisma.order.count();
@@ -39,9 +39,14 @@ export default async function AdminDashboard() {
           <div className="bg-white p-6 rounded-xl shadow-sm">
             <h3 className="font-bold text-xl mb-4 border-b pb-2">H&#305;zl&#305; &#304;&#351;lemler</h3>
             <div className="space-y-3">
-              <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg font-medium transition-colors">
+              {/* BURASI GÜNCELLENDİ: Buton artık Link oldu */}
+              <Link 
+                href="/admin/add-product"
+                className="block w-full text-left px-4 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-bold transition-colors border border-red-100"
+              >
                 + Yeni &#220;r&#252;n Ekle
-              </button>
+              </Link>
+              
               <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg font-medium transition-colors">
                 Rezervasyonlar&#305; G&#246;r
               </button>
