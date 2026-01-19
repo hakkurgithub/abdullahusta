@@ -36,10 +36,13 @@ export default function Home() {
 
   const handleAddToCart = (item: MenuItem) => {
     addItem({
-      id: parseInt(item.id),
+      id: item.id,
       name: item.name,
       price: item.price,
+      quantity: 1,
+      image: item.image
     });
+    alert(`${item.name} sepete eklendi!`);
   };
 
   if (!isClient) return null;
@@ -56,9 +59,8 @@ export default function Home() {
           backgroundSize: 'cover',
           backgroundPosition: 'center top'
         }}>
-        {/* mt-48 eklenerek yazı aşağı kaydırıldı */}
         <div className="relative z-10 px-4 max-w-4xl mx-auto mt-48">
-          {/* Yazı boyutu küçültüldü: text-4xl md:text-6xl */}
+          {/* HATA BURADAYDI - Düzeltildi */}
           <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-2xl leading-tight">
             {content.heroTitle || "Lezzetin Ustası Abdullah Usta"}
           </h1>

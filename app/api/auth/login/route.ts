@@ -1,71 +1,55 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import { SignJWT } from "jose";
-import { cookies } from "next/headers";
-
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || "gizli-anahtar";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import { SignJWT } from 'jose';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const { email, password } = body;
 
-    // 1. Kullanıcıyı bul
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // 1. Kullanıcıyı Bul
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return NextResponse.json(
-        { message: "Kullanıcı bulunamadı." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Kullanıcı bulunamadı.' }, { status: 401 });
     }
 
-    // 2. Şifreyi kontrol et
+    // 2. Şifreyi Kontrol Et (Hashlenmiş şifre karşılaştırması)
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
-      return NextResponse.json(
-        { message: "Hatalı şifre!" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Hatalı şifre.' }, { status: 401 });
     }
 
-    // 3. Güvenli Token oluştur (Kimlik Kartı)
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const token = await new SignJWT({ 
-      userId: user.id, 
-      email: user.email, 
-      role: user.role 
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("24h") // 24 saat geçerli
+    // 3. Token Oluştur (JWT)
+    // .env dosyasındaki gizli anahtarı kullanır, yoksa yedek anahtarı alır.
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "gizli-anahtar");
+    
+    const token = await new SignJWT({ userId: user.id, role: user.role })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('24h') // 1 Gün geçerli
       .sign(secret);
 
-    // 4. Token'ı çereze (cookie) kaydet
+    // 4. ÇEREZİ (COOKIE) ZORLA YAPIŞTIR
+    // "path: '/'" ve "SameSite: lax" ayarları çok kritiktir.
     const cookieStore = await cookies();
     
-    cookieStore.set("auth_token", token, {
+    // Eski çerezi temizle (Çakışmayı önler)
+    cookieStore.delete('auth_token');
+
+    // Yenisini ekle
+    cookieStore.set('auth_token', token, {
       httpOnly: true, // JavaScript ile erişilemez (Güvenlik)
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24, // 1 gün (saniye cinsinden)
-      path: "/",
+      secure: process.env.NODE_ENV === 'production', // Sadece HTTPS'de çalışsın (Canlıda)
+      sameSite: 'lax', // Yönlendirmelerde çerezi koru
+      path: '/', // Sitenin HER YERİNDE geçerli olsun
+      maxAge: 60 * 60 * 24 // 24 Saat
     });
 
-    // Başarılı yanıt (Rol bilgisini de dönüyoruz ki yönlendirme yapabilelim)
-    return NextResponse.json({ 
-      message: "Giriş başarılı!", 
-      role: user.role 
-    });
+    return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error("Login hatası:", error);
-    return NextResponse.json(
-      { message: "Bir hata oluştu." },
-      { status: 500 }
-    );
+    console.error("Login Hatası:", error);
+    return NextResponse.json({ error: 'Giriş işlemi sırasında teknik bir hata oluştu.' }, { status: 500 });
   }
 }

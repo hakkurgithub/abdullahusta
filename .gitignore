@@ -19,3 +19,6 @@ pnpm-debug.log*
 .vscode/
 .idea/
 /lib/generated/prisma
+
+.vercel
+.env*.local

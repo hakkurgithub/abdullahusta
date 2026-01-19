@@ -1,220 +1,136 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useCart } from '../../components/CartProvider';
-
-type FormData = { address: string; phone: string; payment: 'K.K.' | 'Nakit' };
+import { useCart } from '@/components/CartProvider';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
-  const [isClient, setIsClient] = useState(false);
-  const [form, setForm] = useState<FormData>({ 
-    address: '', 
-    phone: '', 
-    payment: 'Nakit' 
+  const { items, removeItem, total, clearCart } = useCart();
+  const router = useRouter();
+  
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    address: '',
+    phone: '',
+    paymentMethod: 'CASH', // Varsayılan: Nakit
+    note: ''
   });
-  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const sendOrderToWhatsApp = () => {
-    if (items.length === 0) {
-      alert('Sepetiniz boş.');
-      return;
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items,
+          total,
+          ...formData
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        clearCart(); // Sepeti temizle
+        alert('🎉 Siparişiniz Alındı! Profil sayfasından takip edebilirsiniz.');
+        router.push('/profile'); // Profile yönlendir
+      } else {
+        if (res.status === 401) {
+          if (confirm('Sipariş vermek için giriş yapmalısınız. Giriş sayfasına gidilsin mi?')) {
+            router.push('/login');
+          }
+        } else {
+          alert('Hata: ' + data.error);
+        }
+      }
+    } catch (error) {
+      alert('Bir sorun oluştu.');
+    } finally {
+      setLoading(false);
     }
-    setShowForm(true);
   };
-
-  const finalizeOrder = () => {
-    if (!form.address || !form.phone) {
-      alert('Lütfen teslimat adresi ve telefon numaranızı girin.');
-      return;
-    }
-    
-    // Abdullah Usta WhatsApp Hattı
-    const phoneRaw = '905442024244'; 
-    
-    const products = items
-      .map((i) => `• ${i.name} x${i.quantity} -> ₺${(i.price * i.quantity).toFixed(0)}`)
-      .join('%0A');
-    
-    const total = getTotalPrice().toFixed(0);
-    const msg =
-      `*YENİ SİPARİŞ (Abdullah Usta)*%0A` +
-      `-----------------%0A` +
-      products +
-      `%0A-----------------%0A` +
-      `*Toplam: ₺${total}*%0A` +
-      `*Adres:* ${form.address}%0A` +
-      `*Telefon:* ${form.phone}%0A` +
-      `*Ödeme:* ${form.payment}`;
-
-    window.open(`https://wa.me/${phoneRaw}?text=${msg}`, '_blank');
-    clearCart();
-    setShowForm(false);
-  };
-
-  if (!isClient) return null;
 
   if (items.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <i className="ri-shopping-cart-2-line text-4xl text-gray-400"></i>
-        </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Sepetiniz Boş</h1>
-        <p className="text-gray-500 mb-6">Görünüşe göre henüz bir ürün eklemediniz.</p>
-        <Link href="/menu" className="bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200">
-          Menüye Göz At
-        </Link>
+      <div className="min-h-screen pt-32 pb-12 px-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Sepetiniz Boş 😔</h1>
+        <button onClick={() => router.push('/menu')} className="bg-red-600 text-white px-8 py-3 rounded-full font-bold hover:bg-red-700">
+          Menüye Dön
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Alışveriş Sepetim</h1>
+    <div className="min-h-screen bg-gray-50 pt-24 pb-12 px-4">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Ürün Listesi */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              {items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between py-6 border-b last:border-0 border-gray-50">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-800 text-lg">{item.name}</h3>
-                    <p className="text-red-600 font-bold">{item.price} ₺</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center bg-gray-50 rounded-lg border border-gray-100">
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)} 
-                        className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors"
-                      >
-                        <i className="ri-subtract-line"></i>
-                      </button>
-                      <span className="w-8 text-center font-bold text-gray-800">{item.quantity}</span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)} 
-                        className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors"
-                      >
-                        <i className="ri-add-line"></i>
-                      </button>
-                    </div>
-                    <button 
-                      onClick={() => removeItem(item.id)} 
-                      className="text-gray-400 hover:text-red-600 transition-colors p-2"
-                      title="Ürünü Sil"
-                    >
-                      <i className="ri-delete-bin-line text-xl"></i>
-                    </button>
-                  </div>
-                </div>
-              ))}
+        {/* SOL: SEPET LİSTESİ */}
+        <div className="lg:col-span-2 space-y-4">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Sepetim ({items.length} Ürün)</h2>
+          {items.map((item) => (
+            <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+              <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                {item.image ? (
+                   <Image src={item.image} alt={item.name} fill className="object-cover" />
+                ) : (
+                   <div className="flex items-center justify-center h-full text-xs text-gray-400">Resim Yok</div>
+                )}
+              </div>
+              <div className="flex-grow">
+                <h3 className="font-bold text-gray-900">{item.name}</h3>
+                <p className="text-red-600 font-bold">{item.price} ₺</p>
+              </div>
+              <div className="text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">x{item.quantity}</div>
+              <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-600 p-2">🗑️</button>
             </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Sipariş Özeti */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Sipariş Özeti</h2>
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between text-gray-600">
-                  <span>Ara Toplam</span>
-                  <span>{getTotalPrice().toFixed(0)} ₺</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Teslimat</span>
-                  <span className="text-green-600 font-medium">Ücretsiz</span>
-                </div>
-                <div className="border-t pt-4 flex justify-between">
-                  <span className="text-lg font-bold text-gray-800">Toplam</span>
-                  <span className="text-2xl font-black text-red-600">{getTotalPrice().toFixed(0)} ₺</span>
+        {/* SAĞ: ÖDEME FORMU */}
+        <div className="lg:col-span-1">
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 sticky top-24">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Siparişi Tamamla</h2>
+            <form onSubmit={handleCheckout} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Teslimat Adresi</label>
+                <textarea required placeholder="Adresiniz..." className="w-full p-3 border rounded-lg h-24 resize-none"
+                  value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Telefon</label>
+                <input type="tel" required placeholder="05XX..." className="w-full p-3 border rounded-lg"
+                  value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Ödeme</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setFormData({...formData, paymentMethod: 'CASH'})}
+                    className={`p-3 rounded-lg border text-sm font-bold ${formData.paymentMethod === 'CASH' ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-200'}`}>
+                    💵 Nakit
+                  </button>
+                  <button type="button" onClick={() => setFormData({...formData, paymentMethod: 'CREDIT_CARD'})}
+                    className={`p-3 rounded-lg border text-sm font-bold ${formData.paymentMethod === 'CREDIT_CARD' ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-200'}`}>
+                    💳 Kart
+                  </button>
                 </div>
               </div>
-
-              <button 
-                onClick={sendOrderToWhatsApp}
-                className="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-100 active:scale-95"
-              >
-                <i className="ri-whatsapp-line text-2xl"></i>
-                Siparişi WhatsApp'la Gönder
-              </button>
-              
-              <Link href="/menu" className="block text-center mt-4 text-gray-500 hover:text-gray-800 text-sm font-medium transition-colors">
-                ← Alışverişe Devam Et
-              </Link>
-            </div>
+              <div className="border-t pt-4 mt-4">
+                <div className="flex justify-between items-center text-lg font-bold text-gray-900 mb-4">
+                  <span>Toplam</span><span>{total} ₺</span>
+                </div>
+                <button type="submit" disabled={loading} className="w-full bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition-all disabled:opacity-50">
+                  {loading ? 'İşleniyor...' : 'Siparişi Onayla'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-
-      {/* Sipariş Bilgi Formu Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl transform transition-all animate-in fade-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-800">Teslimat Bilgileri</h3>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 p-2">
-                <i className="ri-close-line text-2xl"></i>
-              </button>
-            </div>
-            
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Teslimat Adresi</label>
-                <textarea 
-                  placeholder="Mahalle, sokak, kapı no ve kat bilgilerini yazınız..." 
-                  className="w-full border border-gray-200 p-4 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all h-32 resize-none"
-                  value={form.address}
-                  onChange={(e) => setForm({...form, address: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Telefon Numarası</label>
-                <input 
-                  type="tel" 
-                  placeholder="05XX XXX XX XX" 
-                  className="w-full border border-gray-200 p-4 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                  value={form.phone}
-                  onChange={(e) => setForm({...form, phone: e.target.value})}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Ödeme Yöntemi</label>
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => setForm({...form, payment: 'Nakit'})}
-                    className={`flex-1 py-3 rounded-xl border-2 font-bold transition-all ${form.payment === 'Nakit' ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
-                  >
-                    Nakit
-                  </button>
-                  <button 
-                    onClick={() => setForm({...form, payment: 'K.K.'})}
-                    className={`flex-1 py-3 rounded-xl border-2 font-bold transition-all ${form.payment === 'K.K.' ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
-                  >
-                    Kredi Kartı
-                  </button>
-                </div>
-              </div>
-
-              <button 
-                onClick={finalizeOrder}
-                className="w-full bg-red-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-red-700 transition-all shadow-xl shadow-red-100 mt-4 active:scale-95"
-              >
-                Siparişi Tamamla
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

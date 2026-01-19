@@ -1,37 +1,64 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// 1. Ürünleri Listele (GET)
+export async function GET() {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: {
+        category: 'asc', // Kategorilere göre sıralı gelsin
+      },
+    });
+    return NextResponse.json(products);
+  } catch (error) {
+    return NextResponse.json({ error: 'Ürünler çekilemedi' }, { status: 500 });
+  }
+}
+
+// 2. Yeni Ürün Ekle (POST)
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, description, price, category, image } = body;
+    const { name, price, description, category, image } = body;
 
     // Basit doğrulama
-    if (!name || !price || !category) {
-      return NextResponse.json(
-        { message: 'Isim, Fiyat ve Kategori zorunludur.' }, 
-        { status: 400 }
-      );
+    if (!name || !price) {
+      return NextResponse.json({ error: 'İsim ve Fiyat zorunludur' }, { status: 400 });
     }
 
-    // Veritabanına kaydet
-    const product = await prisma.product.create({
+    const newProduct = await prisma.product.create({
       data: {
         name,
-        description,
         price: parseFloat(price), // Fiyatı sayıya çevir
-        category,
+        description: description || '',
+        category: category || 'Diğer',
         image: image || null,
-        isAvailable: true,
       },
     });
 
-    return NextResponse.json(product, { status: 201 });
+    return NextResponse.json(newProduct);
   } catch (error) {
-    console.error('Urun ekleme hatasi:', error);
-    return NextResponse.json(
-      { message: 'Sunucu hatasi olustu.' }, 
-      { status: 500 }
-    );
+    console.error("Ekleme Hatası:", error);
+    return NextResponse.json({ error: 'Ürün eklenirken hata oluştu' }, { status: 500 });
+  }
+}
+
+// 3. Ürün Sil (DELETE)
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID gerekli' }, { status: 400 });
+    }
+
+    await prisma.product.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: 'Silme işlemi başarısız' }, { status: 500 });
   }
 }

@@ -4,15 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Login() {
+export default function LoginPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,82 +27,80 @@ export default function Login() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message || 'Giriş yapılamadı');
-      }
-
-      // Başarılı!
-      // Eğer Admin ise panele, değilse profil sayfasına yönlendir
-      if (data.role === 'ADMIN') {
-        window.location.href = '/admin'; // Sayfayı tam yenileyerek git
+      if (res.ok) {
+        // BAŞARILI!
+        // Tarayıcıya "Her şeyi unut ve Profil sayfasına git" diyoruz.
+        // Bu komut, router.push'tan daha etkilidir çünkü sayfayı tam yeniler.
+        window.location.href = '/profile';
       } else {
-        window.location.href = '/'; // Ana sayfaya git
+        // HATA VARSA GÖSTER
+        setError(data.error || 'Giriş yapılamadı.');
+        setLoading(false);
       }
-
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
+    } catch (err) {
+      setError('Sunucu ile bağlantı kurulamadı.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Giriş Yap</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Hesabınıza erişmek için bilgilerinizi girin.
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-red-600 p-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-2">Hoş Geldiniz</h2>
+          <p className="text-red-100">Lezzet dünyasına giriş yapın</p>
         </div>
-        
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center font-medium">
-            {error}
-          </div>
-        )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+        <div className="p-8">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-lg flex items-center font-bold">
+              ⚠️ {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700">E-posta</label>
-              <input
-                type="email"
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
+              <input 
+                type="email" 
                 required
-                className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
                 placeholder="ornek@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700">Şifre</label>
-              <input
-                type="password"
+              <label className="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+              <input 
+                type="password" 
                 required
-                className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all"
-                placeholder="******"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
               />
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all disabled:opacity-50"
-          >
-            {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-          </button>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-red-700 transition-all disabled:opacity-70"
+            >
+              {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+            </button>
+          </form>
 
-          <div className="text-center text-sm">
-            <span className="text-gray-600">Hesabınız yok mu? </span>
-            <Link href="/register" className="font-medium text-red-600 hover:text-red-500">
-              Kayıt Ol
-            </Link>
+          <div className="mt-6 text-center pt-6 border-t border-gray-100">
+            <p className="text-gray-600">
+              Hesabınız yok mu?{' '}
+              <Link href="/register" className="text-red-600 font-bold hover:underline">
+                Hemen Kayıt Ol
+              </Link>
+            </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

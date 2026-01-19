@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-export async function middleware(request: NextRequest) {
+// DÜZELTME: Fonksiyon adı "middleware" -> "proxy" olarak değiştirildi.
+// Next.js artık bu dosyayı tanıması için bu isme bakıyor.
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value;
   const { pathname } = request.nextUrl;
 

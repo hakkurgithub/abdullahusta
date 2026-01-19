@@ -1,124 +1,112 @@
-"use client";
+'use client';
 
-import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface CartItem {
-  id: number;
+// Sepet öğesi tipi
+export type CartItem = {
+  id: string; // ID string olmalı (Prisma uyumu için)
   name: string;
   price: number;
   quantity: number;
-}
+  image?: string | null;
+};
 
-interface CartContextType {
+// Context tipi (Dışarıya sunduğumuz fonksiyonlar)
+type CartContextType = {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
-  removeItem: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  addItem: (item: CartItem) => void;
+  updateQuantity: (id: string, quantity: number) => void; // <-- Bu eksikti, ekledik
+  removeItem: (id: string) => void;
   clearCart: () => void;
-  getTotalPrice: () => number;
-  getTotalItems: () => number;
-  sendOrderToWhatsApp: (masa: string, adres: string, not: string) => void;
-}
+  total: number;         // Toplam tutar (değişken olarak)
+  getTotalPrice: () => number; // Toplam tutar (fonksiyon olarak - uyumluluk için)
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
-};
-
-export const CartProvider = ({ children }: { children: ReactNode }) => {
+export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
+  // Sayfa yüklendiğinde LocalStorage'dan çek
   useEffect(() => {
-    const storedCart = localStorage.getItem('cart');
-    if (storedCart) {
-      setItems(JSON.parse(storedCart));
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        setItems(JSON.parse(savedCart));
+      } catch (error) {
+        console.error("Sepet yükleme hatası:", error);
+      }
     }
   }, []);
 
+  // Sepet değişince kaydet
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (item: Omit<CartItem, 'quantity'>) => {
-    setItems(prevItems => {
-      const existingItem = prevItems.find(i => i.id === item.id);
+  // Ürün Ekleme
+  const addItem = (newItem: CartItem) => {
+    setItems((currentItems) => {
+      const existingItem = currentItems.find((item) => item.id === newItem.id);
+      
       if (existingItem) {
-        return prevItems.map(i =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        return currentItems.map((item) =>
+          item.id === newItem.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
         );
       }
-      return [...prevItems, { ...item, quantity: 1 }];
+      return [...currentItems, newItem];
     });
   };
 
-  const removeItem = (id: number) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== id));
+  // Miktar Güncelleme (Artır/Azalt)
+  const updateQuantity = (id: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // En az 1 olabilir
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
+    );
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(id);
-    } else {
-      setItems(prevItems =>
-        prevItems.map(item => (item.id === id ? { ...item, quantity } : item))
-      );
-    }
+  // Ürün Silme
+  const removeItem = (id: string) => {
+    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
   };
 
+  // Sepeti Temizle
   const clearCart = () => {
     setItems([]);
   };
 
-  const getTotalPrice = () => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
-
-  const getTotalItems = () => {
-    return items.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  const sendOrderToWhatsApp = (masa: string, adres: string, not: string) => {
-    if (items.length === 0) {
-      alert("Sepetiniz boş!");
-      return;
-    }
-    const now = new Date();
-    const tarihSaat = now.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
-    const siparisNo = `AU-${Date.now().toString().slice(-6)}`;
-
-    let message = `*YENİ SİPARİŞ (Abdullah Usta)* 🔥\n`;
-    message += `*Sipariş No:* ${siparisNo}\n`;
-    message += `*Tarih:* ${tarihSaat}\n\n--------------------------\n`;
-    items.forEach(item => {
-      message += `• ${item.quantity} x ${item.name} - ${item.price * item.quantity} ₺\n`;
-    });
-    message += `--------------------------\n*Toplam Tutar:* ${getTotalPrice()} ₺\n\n`;
-    
-    if (masa) message += `📍 *Masa:* ${masa}\n`;
-    if (adres) message += `🏠 *Adres:* ${adres}\n`;
-    if (not) message += `📝 *Not:* ${not}\n`;
-
-    // Abdullah Usta Güncel WhatsApp Numarası
-    const phoneNumber = "905442024244"; 
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      window.location.href = whatsappUrl;
-    } else {
-      window.open(whatsappUrl, "_blank");
-    }
-    clearCart();
-  };
+  // Toplam Tutar Hesabı
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  // Bazı sayfalar fonksiyon olarak çağırdığı için bunu da ekliyoruz
+  const getTotalPrice = () => total;
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, getTotalPrice, getTotalItems, sendOrderToWhatsApp }}>
+    <CartContext.Provider 
+      value={{ 
+        items, 
+        addItem, 
+        updateQuantity, // Artık kullanılabilir
+        removeItem, 
+        clearCart, 
+        total,
+        getTotalPrice 
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
-};
+}
+
+export function useCart() {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+}

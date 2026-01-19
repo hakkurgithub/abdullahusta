@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -7,77 +8,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// KULLANICI ROLLERİ (Yetkilendirme için)
-enum Role {
-  USER
-  ADMIN
-}
-
-// KULLANICI TABLOSU
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  password      String    // Şifreli saklanacak (bcrypt)
-  phone         String?
-  role          Role      @default(USER) // Varsayılan herkes Müşteridir
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  orders        Order[]
-  reservations  Reservation[]
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  address   String?  // Adres alanı
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  orders    Order[]  // Kullanıcının siparişleri
 }
 
-// MENÜ (ÜRÜNLER) TABLOSU
 model Product {
   id          String   @id @default(cuid())
   name        String
   description String?
   price       Decimal
-  category    String   // Kebaplar, İçecekler vb.
   image       String?
-  isAvailable Boolean  @default(true)
+  category    String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  orderItems  OrderItem[]
 }
 
-// SİPARİŞ TABLOSU
+// --- YENİ EKLENEN SİPARİŞ TABLOLARI ---
+
 model Order {
-  id          String      @id @default(cuid())
-  userId      String?     // Üye ise ID, değilse boş
-  user        User?       @relation(fields: [userId], references: [id])
-  status      String      @default("PENDING") // PENDING, PREPARING, DELIVERED
-  totalAmount Decimal
-  address     String?
-  note        String?
-  createdAt   DateTime    @default(now())
+  id            String      @id @default(cuid())
+  createdAt     DateTime    @default(now())
+  status        String      @default("PENDING") // PENDING, PREPARING, ON_WAY, DELIVERED, CANCELLED
+  total         Decimal
+  paymentMethod String      @default("CASH") // CASH, CREDIT_CARD
+  address       String
+  note          String?
   
-  items       OrderItem[]
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  
+  items         OrderItem[] // Siparişin içindeki ürünler
 }
 
-// SİPARİŞ DETAYI
 model OrderItem {
   id        String  @id @default(cuid())
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
   quantity  Int
-  price     Decimal
-}
-
-// REZERVASYON TABLOSU
-model Reservation {
-  id        String   @id @default(cuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  name      String
-  email     String?
-  phone     String
-  date      DateTime
-  guests    Int
-  status    String   @default("PENDING")
-  createdAt DateTime @default(now())
+  price     Decimal // O anki satış fiyatı
+  name      String  // Ürün adı
+  
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
 }
