@@ -1,17 +1,18 @@
-import { verifyAuth } from "@/lib/auth"; // DÜZELTME: auth yerine verifyAuth
-import { cookies } from "next/headers"; // DÜZELTME: Cookie okuyucu eklendi
+import { verifyAuth } from "@/lib/auth"; // DOĞRU IMPORT BU
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ProfileActions from "./ProfileActions";
 import OrderList from "@/components/OrderList"; 
 
 export default async function ProfilePage() {
-  // 1. Oturum Kontrolü (DÜZELTİLDİ)
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
+  
+  // 1. DOĞRU KİMLİK DOĞRULAMA
   const verifiedUser = await verifyAuth(token);
 
-  // Eğer giriş yapmamışsa at
+  // Eğer giriş yapmamışsa login sayfasına at
   if (!verifiedUser || !verifiedUser.email) {
     redirect("/login");
   }
