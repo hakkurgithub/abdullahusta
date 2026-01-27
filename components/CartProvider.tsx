@@ -1,112 +1,81 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Sepet öğesi tipi
-export type CartItem = {
-  id: string; // ID string olmalı (Prisma uyumu için)
+// Sepet Tipi Tanımları
+interface CartItem {
+  id: string;
   name: string;
   price: number;
+  image?: string;
   quantity: number;
-  image?: string | null;
-};
+}
 
-// Context tipi (Dışarıya sunduğumuz fonksiyonlar)
-type CartContextType = {
+interface CartContextType {
   items: CartItem[];
-  addItem: (item: CartItem) => void;
-  updateQuantity: (id: string, quantity: number) => void; // <-- Bu eksikti, ekledik
-  removeItem: (id: string) => void;
+  addToCart: (product: any) => void;
+  removeFromCart: (id: string) => void;
   clearCart: () => void;
-  total: number;         // Toplam tutar (değişken olarak)
-  getTotalPrice: () => number; // Toplam tutar (fonksiyon olarak - uyumluluk için)
-};
+  totalPrice: number;
+}
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+// Varsayılan değerler (Hata vermemesi için boş tanımladık)
+const CartContext = createContext<CartContextType>({
+  items: [],
+  addToCart: () => {},
+  removeFromCart: () => {},
+  clearCart: () => {},
+  totalPrice: 0,
+});
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Sayfa yüklendiğinde LocalStorage'dan çek
+  // Sayfa açılınca LocalStorage'dan sepeti yükle
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
+    try {
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
         setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error("Sepet yükleme hatası:", error);
       }
+    } catch (error) {
+      console.log("Sepet yüklenemedi", error);
     }
   }, []);
 
-  // Sepet değişince kaydet
+  // Sepet değişince LocalStorage'a kaydet
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  // Ürün Ekleme
-  const addItem = (newItem: CartItem) => {
-    setItems((currentItems) => {
-      const existingItem = currentItems.find((item) => item.id === newItem.id);
-      
-      if (existingItem) {
-        return currentItems.map((item) =>
-          item.id === newItem.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+  const addToCart = (product: any) => {
+    setItems((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...currentItems, newItem];
+      return [...prev, { ...product, quantity: 1 }];
     });
+    alert(`${product.name} sepete eklendi!`);
   };
 
-  // Miktar Güncelleme (Artır/Azalt)
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return; // En az 1 olabilir
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
+  const removeFromCart = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // Ürün Silme
-  const removeItem = (id: string) => {
-    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
-  };
-
-  // Sepeti Temizle
   const clearCart = () => {
     setItems([]);
   };
 
-  // Toplam Tutar Hesabı
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  
-  // Bazı sayfalar fonksiyon olarak çağırdığı için bunu da ekliyoruz
-  const getTotalPrice = () => total;
+  const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <CartContext.Provider 
-      value={{ 
-        items, 
-        addItem, 
-        updateQuantity, // Artık kullanılabilir
-        removeItem, 
-        clearCart, 
-        total,
-        getTotalPrice 
-      }}
-    >
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart, totalPrice }}>
       {children}
     </CartContext.Provider>
   );
 }
 
-export function useCart() {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
-}
+export const useCart = () => useContext(CartContext);
