@@ -1,63 +1,71 @@
-import { prisma } from '@/lib/prisma';
-import Link from 'next/link';
-// AdminPanel bileşenini sayfaya ekliyoruz (Eğer components klasöründeyse)
-import AdminPanel from '@/components/AdminPanel'; 
+'use client';
 
-export default async function AdminDashboard() {
-  // Veritabanı boşsa hata vermemesi için try-catch veya varsayılan değerler
-  const userCount = await prisma.user.count().catch(() => 0);
-  const productCount = await prisma.product.count().catch(() => 0);
-  const orderCount = await prisma.order.count().catch(() => 0);
-  
+import { useState } from 'react';
+
+export default function AdminLogin() {
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        // Başarılıysa Dashboard'a git
+        window.location.href = '/admin/dashboard';
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Giriş başarısız.');
+      }
+    } catch (err) {
+      setError('Bağlantı hatası.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8 pt-24">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Yönetici Paneli</h1>
-            {/* Ana Sayfaya Dön Butonu */}
-            <Link href="/" className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm hover:bg-gray-700">
-                Siteye Dön
-            </Link>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-4">
+      <div className="w-full max-w-md bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
+        <h1 className="text-3xl font-bold text-center mb-8">🛡️ Yönetici Girişi</h1>
         
-        {/* İstatistik Kartları */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-            <h3 className="text-gray-500 text-sm font-bold uppercase">Toplam Üye</h3>
-            <p className="text-3xl font-bold text-gray-800 mt-2">{userCount}</p>
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Kullanıcı Adı</label>
+            <input 
+              type="text" 
+              className="w-full bg-gray-700 p-3 rounded text-white border border-gray-600 focus:border-red-500 outline-none"
+              onChange={(e) => setFormData({...formData, username: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Şifre</label>
+            <input 
+              type="password" 
+              className="w-full bg-gray-700 p-3 rounded text-white border border-gray-600 focus:border-red-500 outline-none"
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+            />
           </div>
           
-          <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-            <h3 className="text-gray-500 text-sm font-bold uppercase">Toplam Sipariş</h3>
-            <p className="text-3xl font-bold text-gray-800 mt-2">{orderCount}</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
-            <h3 className="text-gray-500 text-sm font-bold uppercase">Menüdeki Ürün</h3>
-            <p className="text-3xl font-bold text-gray-800 mt-2">{productCount}</p>
-          </div>
-        </div>
+          {error && <div className="text-red-400 text-center text-sm">{error}</div>}
 
-        {/* Hızlı İşlemler */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="font-bold text-xl mb-4 border-b pb-2">Hızlı İşlemler</h3>
-            <div className="space-y-3">
-              {/* Ürün Ekleme Sayfasına Giden Link */}
-              <Link 
-                href="/admin/add-product"
-                className="block w-full text-center px-4 py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-200"
-              >
-                + YENİ ÜRÜN EKLE
-              </Link>
-            </div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-             <h3 className="font-bold text-xl mb-4 border-b pb-2">Son Durum</h3>
-             <p className="text-gray-500">Sistem sorunsuz çalışıyor.</p>
-          </div>
-        </div>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded transition-all"
+          >
+            {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+          </button>
+        </form>
       </div>
     </div>
   );

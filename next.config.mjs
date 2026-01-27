@@ -1,16 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // RESİMLER İÇİN KESİN ÇÖZÜM:
-  // "unoptimized: true" diyerek Next.js'e "Karışma, olduğu gibi göster" diyoruz.
-  // Bu ayar domain engellerini ve kırık resim sorunlarını kökten çözer.
+  // Resimlerin her yerde (Vercel, GitHub) görünmesini garantiye alır
   images: {
     unoptimized: true, 
   },
-
-  // Hata Engelleyiciler
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // TypeScript hataları yüzünden build işleminin durmasını engeller
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -1,54 +1,90 @@
 'use client';
 
-import { useCart } from '@/components/CartProvider';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCart } from '../../components/CartProvider';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function CartPage() {
-  const { items, removeItem, total, clearCart } = useCart();
+  const { items, removeFromCart, totalPrice, clearCart } = useCart();
   const router = useRouter();
   
+  // Form Bilgileri
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Nakit');
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    address: '',
-    phone: '',
-    paymentMethod: 'CASH', // Varsayılan: Nakit
-    note: ''
-  });
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // --- SAYFA AÇILINCA KULLANICI BİLGİLERİNİ ÇEK ---
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const res = await fetch('/api/user/details');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.address) setAddress(data.address);
+          if (data.phone) setPhone(data.phone);
+          setIsUserLoggedIn(true);
+        }
+      } catch (error) {
+        console.log("Misafir kullanıcı");
+      }
+    };
+    fetchUserInfo();
+  }, []);
+
+  // --- SİPARİŞ VE WHATSAPP YÖNLENDİRMESİ ---
+  const handleOrder = async () => {
+    if (items.length === 0) return alert('Sepetiniz boş!');
+    if (!address) return alert('Lütfen teslimat adresi giriniz.');
+    if (!phone) return alert('Lütfen telefon numarası giriniz.');
+
     setLoading(true);
 
     try {
+      // 1. Önce siparişi veritabanına kaydet
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items,
-          total,
-          ...formData
+          total: totalPrice,
+          address,
+          phone,
+          paymentMethod,
         }),
       });
 
-      const data = await res.json();
-
       if (res.ok) {
-        clearCart(); // Sepeti temizle
-        alert('🎉 Siparişiniz Alındı! Profil sayfasından takip edebilirsiniz.');
-        router.push('/profile'); // Profile yönlendir
+        const orderData = await res.json();
+        
+        // 2. Sipariş ID'sini al (Kısa halini kullanacağız)
+        const orderId = orderData.id ? orderData.id.slice(0, 5).toUpperCase() : 'YENI';
+
+        // 3. WhatsApp Mesajını Hazırla
+        const adminPhone = '905442024244'; // Sizin Numaranız
+        const message = `👋 Merhaba Abdullah Usta!\n\nWeb sitenizden yeni bir sipariş verdim.\n\n🧾 *Sipariş No:* #${orderId}\n💰 *Tutar:* ${totalPrice} TL\n💳 *Ödeme:* ${paymentMethod}\n📍 *Adres:* ${address}\n\nSiparişimi onaylar mısınız?`;
+        
+        const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
+
+        // 4. Sepeti Temizle ve Yönlendir
+        clearCart();
+        
+        // Kullanıcıya bilgi verip WhatsApp'a gönder
+        alert('✅ Siparişiniz veritabanına kaydedildi! Şimdi onay için WhatsApp\'a yönlendiriliyorsunuz...');
+        window.location.href = whatsappUrl; 
+
       } else {
         if (res.status === 401) {
-          if (confirm('Sipariş vermek için giriş yapmalısınız. Giriş sayfasına gidilsin mi?')) {
-            router.push('/login');
-          }
+          alert('Sipariş vermek için lütfen giriş yapın.');
+          router.push('/login');
         } else {
-          alert('Hata: ' + data.error);
+          alert('Bir hata oluştu. Lütfen tekrar deneyin.');
         }
       }
     } catch (error) {
-      alert('Bir sorun oluştu.');
+      alert('Bağlantı hatası.');
     } finally {
       setLoading(false);
     }
@@ -56,80 +92,131 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen pt-32 pb-12 px-4 text-center">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Sepetiniz Boş 😔</h1>
-        <button onClick={() => router.push('/menu')} className="bg-red-600 text-white px-8 py-3 rounded-full font-bold hover:bg-red-700">
-          Menüye Dön
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <h2 className="text-2xl font-bold text-gray-400 mb-4">Sepetinizde ürün yok 😔</h2>
+        <button 
+          onClick={() => router.push('/menu')}
+          className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-colors"
+        >
+          Menüye Git
         </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* SOL: SEPET LİSTESİ */}
+        {/* SOL TARAF: ÜRÜNLER */}
         <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Sepetim ({items.length} Ürün)</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Sepetim ({items.length} Ürün)</h2>
+          
           {items.map((item) => (
-            <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+            <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 border border-gray-100">
+              <div className="w-20 h-20 relative bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                 {item.image ? (
-                   <Image src={item.image} alt={item.name} fill className="object-cover" />
+                  <Image src={item.image} alt={item.name} fill className="object-cover" />
                 ) : (
-                   <div className="flex items-center justify-center h-full text-xs text-gray-400">Resim Yok</div>
+                  <div className="flex items-center justify-center h-full text-xs text-gray-400">Resim Yok</div>
                 )}
               </div>
+              
               <div className="flex-grow">
-                <h3 className="font-bold text-gray-900">{item.name}</h3>
+                <h3 className="font-bold text-gray-800">{item.name}</h3>
                 <p className="text-red-600 font-bold">{item.price} ₺</p>
               </div>
-              <div className="text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">x{item.quantity}</div>
-              <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-600 p-2">🗑️</button>
+
+              <div className="flex items-center gap-3">
+                <span className="text-gray-500 font-bold text-sm">x{item.quantity}</span>
+                <button 
+                  onClick={() => removeFromCart(item.id)}
+                  className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors"
+                >
+                  🗑️
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* SAĞ: ÖDEME FORMU */}
+        {/* SAĞ TARAF: ÖDEME FORMU */}
         <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 sticky top-24">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Siparişi Tamamla</h2>
-            <form onSubmit={handleCheckout} className="space-y-4">
+          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-24">
+            <h3 className="font-bold text-xl text-gray-800 mb-6">Siparişi Tamamla</h3>
+
+            <div className="space-y-4">
+              
+              {/* Adres Kutusu */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Teslimat Adresi</label>
-                <textarea required placeholder="Adresiniz..." className="w-full p-3 border rounded-lg h-24 resize-none"
-                  value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
+                <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">TESLİMAT ADRESİ</label>
+                <textarea 
+                  placeholder="Mahalle, Cadde, Kapı No, Tarif..." 
+                  rows={3}
+                  className="w-full p-3 border-2 border-gray-100 rounded-xl focus:border-red-500 outline-none transition-colors resize-none text-sm"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
               </div>
+
+              {/* Telefon Kutusu */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Telefon</label>
-                <input type="tel" required placeholder="05XX..." className="w-full p-3 border rounded-lg"
-                  value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">TELEFON</label>
+                <input 
+                  type="tel"
+                  placeholder="05XX XXX XX XX" 
+                  className="w-full p-3 border-2 border-gray-100 rounded-xl focus:border-red-500 outline-none transition-colors text-sm"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
+
+              {/* Ödeme Yöntemi */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Ödeme</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => setFormData({...formData, paymentMethod: 'CASH'})}
-                    className={`p-3 rounded-lg border text-sm font-bold ${formData.paymentMethod === 'CASH' ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-200'}`}>
-                    💵 Nakit
+                <label className="block text-xs font-bold text-gray-500 mb-2 ml-1">ÖDEME YÖNTEMİ</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setPaymentMethod('Nakit')}
+                    className={`py-3 rounded-xl font-bold text-sm border-2 transition-all ${paymentMethod === 'Nakit' ? 'border-red-600 bg-red-50 text-red-700' : 'border-gray-100 text-gray-500 hover:bg-gray-50'}`}
+                  >
+                    💵 Nakit / Kapıda
                   </button>
-                  <button type="button" onClick={() => setFormData({...formData, paymentMethod: 'CREDIT_CARD'})}
-                    className={`p-3 rounded-lg border text-sm font-bold ${formData.paymentMethod === 'CREDIT_CARD' ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-200'}`}>
-                    💳 Kart
+                  <button 
+                    onClick={() => setPaymentMethod('Kart')}
+                    className={`py-3 rounded-xl font-bold text-sm border-2 transition-all ${paymentMethod === 'Kart' ? 'border-red-600 bg-red-50 text-red-700' : 'border-gray-100 text-gray-500 hover:bg-gray-50'}`}
+                  >
+                    💳 Kredi Kartı
                   </button>
                 </div>
               </div>
-              <div className="border-t pt-4 mt-4">
-                <div className="flex justify-between items-center text-lg font-bold text-gray-900 mb-4">
-                  <span>Toplam</span><span>{total} ₺</span>
+
+              <div className="border-t border-dashed my-4 pt-4">
+                <div className="flex justify-between items-center mb-6">
+                  <span className="text-gray-500 font-bold">Toplam Tutar</span>
+                  <span className="text-2xl font-extrabold text-gray-900">{totalPrice} ₺</span>
                 </div>
-                <button type="submit" disabled={loading} className="w-full bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition-all disabled:opacity-50">
-                  {loading ? 'İşleniyor...' : 'Siparişi Onayla'}
+
+                <button 
+                  onClick={handleOrder}
+                  disabled={loading}
+                  className="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 shadow-lg shadow-green-200 transition-transform active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2"
+                >
+                  {loading ? 'İşleniyor...' : (
+                    <>
+                      <span>Siparişi WhatsApp ile Onayla</span>
+                      <i className="ri-whatsapp-line text-xl"></i>
+                    </>
+                  )}
                 </button>
+                <p className="text-center text-[10px] text-gray-400 mt-2">
+                  *Siparişiniz önce sisteme kaydedilir, sonra onay için WhatsApp açılır.
+                </p>
               </div>
-            </form>
+
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );

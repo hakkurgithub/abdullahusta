@@ -27,9 +27,12 @@ model Product {
   price       Decimal
   image       String?
   category    String
+  
+  // AŞAĞIDAKİ 3 SATIRI KONTROL EDİN VE BU ŞEKİLDE DÜZENLEYİN:
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt  // <-- Değişiklik burada!
+  isAvailable Boolean  @default(true)
 }
-
 // --- YENİ EKLENEN SİPARİŞ TABLOLARI ---
 
 model Order {
