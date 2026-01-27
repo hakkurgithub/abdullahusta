@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 
@@ -11,45 +10,33 @@ export async function POST(req: Request) {
 
     // 1. Kullanıcıyı Bul
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return NextResponse.json({ error: 'Kullanıcı bulunamadı.' }, { status: 401 });
+
+    // 2. Şifre Kontrolü (Basit Eşleşme)
+    if (!user || user.password !== password) {
+      return NextResponse.json({ error: 'Hatalı e-posta veya şifre!' }, { status: 401 });
     }
 
-    // 2. Şifreyi Kontrol Et (Hashlenmiş şifre karşılaştırması)
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return NextResponse.json({ error: 'Hatalı şifre.' }, { status: 401 });
-    }
-
-    // 3. Token Oluştur (JWT)
-    // .env dosyasındaki gizli anahtarı kullanır, yoksa yedek anahtarı alır.
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "gizli-anahtar");
-    
-    const token = await new SignJWT({ userId: user.id, role: user.role })
+    // 3. Token Oluştur
+    const secretKey = new TextEncoder().encode(process.env.JWT_SECRET || 'gizli-anahtar-123');
+    const token = await new SignJWT({ email: user.email, role: user.role }) // Role bilgisini ekledik
       .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('24h') // 1 Gün geçerli
-      .sign(secret);
+      .setExpirationTime('24h')
+      .sign(secretKey);
 
-    // 4. ÇEREZİ (COOKIE) ZORLA YAPIŞTIR
-    // "path: '/'" ve "SameSite: lax" ayarları çok kritiktir.
+    // 4. Çerezi Ayarla
     const cookieStore = await cookies();
-    
-    // Eski çerezi temizle (Çakışmayı önler)
-    cookieStore.delete('auth_token');
-
-    // Yenisini ekle
     cookieStore.set('auth_token', token, {
-      httpOnly: true, // JavaScript ile erişilemez (Güvenlik)
-      secure: process.env.NODE_ENV === 'production', // Sadece HTTPS'de çalışsın (Canlıda)
-      sameSite: 'lax', // Yönlendirmelerde çerezi koru
-      path: '/', // Sitenin HER YERİNDE geçerli olsun
-      maxAge: 60 * 60 * 24 // 24 Saat
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24, // 1 gün
     });
 
-    return NextResponse.json({ success: true });
+    // 5. Başarılı Cevap (Rolü de gönderiyoruz ki ön yüz bilsin)
+    return NextResponse.json({ success: true, role: user.role });
 
   } catch (error) {
-    console.error("Login Hatası:", error);
-    return NextResponse.json({ error: 'Giriş işlemi sırasında teknik bir hata oluştu.' }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }

@@ -6,10 +6,7 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,82 +22,83 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
-
       if (res.ok) {
-        // BAŞARILI!
-        // Tarayıcıya "Her şeyi unut ve Profil sayfasına git" diyoruz.
-        // Bu komut, router.push'tan daha etkilidir çünkü sayfayı tam yeniler.
-        window.location.href = '/profile';
+        // BAŞARILI İSE:
+        // Admin ise Admin Paneline, Normal üyeyse Profile
+        const data = await res.json();
+        
+        // Güvenli yönlendirme (window.location kullanarak sayfayı tazeletiyoruz)
+        if (data.role === 'ADMIN') {
+             window.location.href = '/admin/dashboard';
+        } else {
+             window.location.href = '/profile';
+        }
+        
       } else {
-        // HATA VARSA GÖSTER
-        setError(data.error || 'Giriş yapılamadı.');
-        setLoading(false);
+        const data = await res.json();
+        setError(data.error || 'Giriş başarısız.');
       }
     } catch (err) {
-      setError('Sunucu ile bağlantı kurulamadı.');
+      setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-red-600 p-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-2">Hoş Geldiniz</h2>
-          <p className="text-red-100">Lezzet dünyasına giriş yapın</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900">Tekrar Hoş Geldiniz</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Hesabınıza giriş yapın
+          </p>
         </div>
+        
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div className="mb-4">
+              <label className="block text-sm font-bold text-gray-700 mb-1">E-Posta</label>
+              <input
+                type="email"
+                required
+                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+                placeholder="ornek@email.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Şifre</label>
+              <input
+                type="password"
+                required
+                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+            </div>
+          </div>
 
-        <div className="p-8">
           {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-lg flex items-center font-bold">
-              ⚠️ {error}
+            <div className="text-red-500 text-sm text-center font-bold bg-red-50 p-2 rounded-lg">
+              {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
-              <input 
-                type="email" 
-                required
-                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
-                placeholder="ornek@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
-              <input 
-                type="password" 
-                required
-                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-red-700 transition-all disabled:opacity-70"
-            >
-              {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center pt-6 border-t border-gray-100">
-            <p className="text-gray-600">
-              Hesabınız yok mu?{' '}
-              <Link href="/register" className="text-red-600 font-bold hover:underline">
-                Hemen Kayıt Ol
-              </Link>
-            </p>
+          <button
+            type="submit"
+            disabled={loading}
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-all"
+          >
+            {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+          </button>
+          
+          <div className="text-center text-sm">
+             Hesabınız yok mu? <Link href="/register" className="font-bold text-red-600 hover:text-red-500">Kayıt Olun</Link>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
