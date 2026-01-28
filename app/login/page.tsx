@@ -10,6 +10,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Şifremi Unuttum Fonksiyonu (WhatsApp'a Yönlendirir)
+  const handleForgotPassword = () => {
+    const adminPhone = "905442024244"; // Sizin Numaranız
+    const message = "Merhaba Abdullah Usta, şifremi unuttum. Yardımcı olabilir misiniz?";
+    window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -23,23 +30,18 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        // BAŞARILI İSE:
-        // Admin ise Admin Paneline, Normal üyeyse Profile
         const data = await res.json();
-        
-        // Güvenli yönlendirme (window.location kullanarak sayfayı tazeletiyoruz)
         if (data.role === 'ADMIN') {
              window.location.href = '/admin/dashboard';
         } else {
              window.location.href = '/profile';
         }
-        
       } else {
         const data = await res.json();
         setError(data.error || 'Giriş başarısız.');
       }
     } catch (err) {
-      setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+      setError('Bir hata oluştu. İnternetinizi kontrol edin.');
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
-                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500"
                 placeholder="ornek@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -73,7 +75,7 @@ export default function LoginPage() {
               <input
                 type="password"
                 required
-                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -82,15 +84,25 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm text-center font-bold bg-red-50 p-2 rounded-lg">
-              {error}
+            <div className="flex flex-col gap-2">
+              <div className="text-red-500 text-sm text-center font-bold bg-red-50 p-2 rounded-lg border border-red-100">
+                {error}
+              </div>
+              {/* Hata alınca çıkan yardım butonu */}
+              <button 
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-xs text-center text-blue-600 hover:underline font-bold"
+              >
+                🤷‍♂️ Şifremi Unuttum (WhatsApp'tan Sor)
+              </button>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-all"
+            className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-red-600 hover:bg-red-700 transition-all shadow-lg shadow-red-200"
           >
             {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
           </button>
