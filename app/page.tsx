@@ -1,17 +1,18 @@
 'use client';
 
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { useCart } from '@/components/CartProvider'; // Sepet bağlantısı
+import Link from 'next/link';
+import Image from 'next/image';
+import { useCart } from '@/components/CartProvider';
+// Eğer ReservationModal bileşeni yoksa hata verir, varsa bu satır kalsın. 
+// Yoksa satırı silip aşağıdan butonu güncelleyebilirsiniz.
+import ReservationModal from '@/components/ReservationModal'; 
 
 export default function Home() {
-  const { addToCart } = useCart(); // DÜZELTME: addItem yerine addToCart kullanıyoruz
+  const { addToCart } = useCart(); // DOĞRU FONKSİYON
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("Hepsi");
-
-  // Kategoriler
-  const CATEGORIES = ["Hepsi", "Çorbalar", "Kebaplar", "Izgaralar", "Pide & Lahmacun", "Dönerler", "Tatlılar", "İçecekler"];
+  const [showReservationModal, setShowReservationModal] = useState(false);
 
   // 1. Ürünleri Veritabanından Çek
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function Home() {
         const res = await fetch('/api/products');
         if (res.ok) {
           const data = await res.json();
-          // Sadece 'Yayında' (isAvailable: true) olanları göster
+          // Sadece Yayında olanları al
           setProducts(data.filter((p: any) => p.isAvailable));
         }
       } catch (error) {
@@ -32,94 +33,119 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  // Kategori Filtreleme
-  const filteredProducts = selectedCategory === "Hepsi" 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  // Popüler ürünler (Veritabanından gelen ilk 4 ürün)
+  const popularItems = products.slice(0, 4);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-red-600 font-bold text-xl animate-pulse">Lezzetler Yükleniyor...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-red-600 font-bold text-xl animate-pulse">Lezzetler Hazırlanıyor...</div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-20">
-      
-      {/* HERO / KAPAK ALANI */}
-      <div className="bg-red-700 text-white py-16 px-4 text-center rounded-b-[3rem] shadow-xl mb-10">
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Abdullah Usta</h1>
-        <p className="text-red-100 text-lg max-w-2xl mx-auto">
-          Geleneksel lezzetlerin modern sunumu. En taze malzemelerle hazırlanan kebaplar, pideler ve daha fazlası.
-        </p>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4">
-        
-        {/* KATEGORİ FİLTRESİ */}
-        <div className="flex overflow-x-auto gap-3 pb-6 mb-4 no-scrollbar">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`whitespace-nowrap px-6 py-3 rounded-full font-bold transition-all shadow-sm ${
-                selectedCategory === cat 
-                  ? 'bg-red-600 text-white shadow-red-200' 
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
-              }`}
+    <>
+      {/* --- HERO SECTION (ESKİ GÜZEL TASARIM) --- */}
+      <section 
+        className="relative h-[85vh] flex items-center justify-center text-center text-white bg-neutral-900"
+        style={{ 
+          backgroundImage: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta-hero.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top'
+        }}
+      >
+        <div className="relative z-10 px-4 max-w-4xl mx-auto mt-20">
+          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-2xl leading-tight">
+            Lezzetin Ustası Abdullah Usta
+          </h1>
+          <p className="text-lg md:text-xl font-medium mb-10 opacity-95 drop-shadow-lg text-gray-200">
+            Geleneksel ocakbaşı lezzetini usta ellerden deneyimleyin.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/menu" className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-xl text-lg border-2 border-red-600">
+              Menüyü İncele
+            </Link>
+            <button 
+              onClick={() => setShowReservationModal(true)}
+              className="bg-transparent hover:bg-white hover:text-gray-900 text-white border-2 border-white font-bold py-4 px-10 rounded-full transition-all shadow-xl hover:scale-105 text-lg"
             >
-              {cat}
+              Rezervasyon Yap
             </button>
+          </div>
+        </div>
+
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <span className="text-3xl opacity-80 text-white">⬇️</span>
+        </div>
+      </section>
+
+      {/* --- POPÜLER ÜRÜNLER (VERİTABANI ENTEGRASYONLU) --- */}
+      <section className="py-20 container mx-auto px-4 bg-white">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">Öne Çıkan Lezzetler</h2>
+          <div className="w-20 h-1 bg-red-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+            Misafirlerimizin en çok tercih ettiği imza tabaklarımız.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {popularItems.map((item) => (
+            <div key={item.id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col">
+              
+              {/* Resim */}
+              <div className="relative h-64 w-full overflow-hidden bg-gray-100">
+                {item.image ? (
+                  <Image 
+                    src={item.image} 
+                    alt={item.name} 
+                    fill 
+                    className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400 font-bold">Resim Yok</div>
+                )}
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm flex items-center gap-1">
+                  <span className="text-sm">⭐</span>
+                  <span className="text-sm font-bold text-gray-800">4.9</span>
+                </div>
+              </div>
+
+              {/* İçerik */}
+              <div className="p-6 flex-grow flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors">
+                    {item.name}
+                  </h3>
+                  <p className="text-gray-500 text-sm mb-4 line-clamp-2">
+                    {item.description || 'En taze malzemelerle günlük hazırlanır.'}
+                  </p>
+                </div>
+                
+                <div className="flex justify-between items-center mt-auto">
+                  <span className="text-red-600 font-black text-2xl">{item.price} ₺</span>
+                  <button 
+                    onClick={() => addToCart(item)} // HATA DÜZELDİ: addToCart kullanıldı
+                    className="bg-red-600 text-white p-3 rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-100 active:scale-95"
+                  >
+                    🛒
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* ÜRÜN LİSTESİ */}
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">Bu kategoride henüz ürün bulunmuyor.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-shadow border border-gray-100 flex flex-col">
-                
-                {/* Resim Alanı */}
-                <div className="relative h-48 w-full bg-gray-100 rounded-xl overflow-hidden mb-4">
-                  {product.image ? (
-                    <Image src={product.image} alt={product.name} fill className="object-cover hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400 text-sm font-bold">Resim Yok</div>
-                  )}
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-gray-700 shadow-sm">
-                    {product.category}
-                  </div>
-                </div>
+        <div className="text-center mt-12">
+          <Link href="/menu" className="inline-flex items-center gap-2 text-red-600 font-bold hover:underline text-lg">
+            Tüm Menüyü Gör →
+          </Link>
+        </div>
+      </section>
 
-                {/* Bilgiler */}
-                <div className="flex-grow">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-gray-800 leading-tight">{product.name}</h3>
-                    <span className="text-red-600 font-black text-xl whitespace-nowrap">{product.price} ₺</span>
-                  </div>
-                  <p className="text-gray-500 text-sm line-clamp-2 mb-4">
-                    {product.description || 'Lezzetli ve taze günlük üretim.'}
-                  </p>
-                </div>
-
-                {/* Sepete Ekle Butonu */}
-                <button
-                  onClick={() => addToCart(product)} // KRİTİK DÜZELTME BURADA YAPILDI
-                  className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors flex items-center justify-center gap-2 active:scale-95"
-                >
-                  <span>Sepete Ekle</span>
-                  <i className="ri-shopping-basket-2-fill"></i>
-                </button>
-
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+      {/* Rezervasyon Modalı (Bileşen varsa çalışır) */}
+      {showReservationModal && <ReservationModal isOpen={showReservationModal} onClose={() => setShowReservationModal(false)} />}
+    </>
   );
 }
