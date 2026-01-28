@@ -1,136 +1,125 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useContent } from '../hooks/useContent';
-import { useCart } from '../components/CartProvider';
-import ReservationModal from '../components/ReservationModal';
-import WhatsAppOrderModal from '../components/WhatsAppOrderModal';
-import AdminPanel from '../components/AdminPanel';
-import { adminConfig } from '../lib/admin';
-
-interface MenuItem {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-  image?: string;
-}
+import { useCart } from '@/components/CartProvider'; // Sepet bağlantısı
 
 export default function Home() {
-  const [showReservationModal, setShowReservationModal] = useState(false);
-  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [isAdminMode, setIsAdminMode] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const { addToCart } = useCart(); // DÜZELTME: addItem yerine addToCart kullanıyoruz
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("Hepsi");
 
-  const { content } = useContent();
-  const { addItem } = useCart();
+  // Kategoriler
+  const CATEGORIES = ["Hepsi", "Çorbalar", "Kebaplar", "Izgaralar", "Pide & Lahmacun", "Dönerler", "Tatlılar", "İçecekler"];
 
+  // 1. Ürünleri Veritabanından Çek
   useEffect(() => {
-    setIsClient(true);
-    const isAuthenticated = localStorage.getItem(adminConfig.sessionKey) === 'true';
-    setIsAdminMode(isAuthenticated);
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          // Sadece 'Yayında' (isAvailable: true) olanları göster
+          setProducts(data.filter((p: any) => p.isAvailable));
+        }
+      } catch (error) {
+        console.error("Ürünler yüklenemedi", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
   }, []);
 
-  const handleAddToCart = (item: MenuItem) => {
-    addItem({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-      image: item.image
-    });
-    alert(`${item.name} sepete eklendi!`);
-  };
+  // Kategori Filtreleme
+  const filteredProducts = selectedCategory === "Hepsi" 
+    ? products 
+    : products.filter(p => p.category === selectedCategory);
 
-  if (!isClient) return null;
-
-  const popularItems: MenuItem[] = (content.allMenuItems || []).slice(0, 4);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-red-600 font-bold text-xl animate-pulse">Lezzetler Yükleniyor...</div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* HERO SECTION */}
-      <section 
-        className="relative h-[85vh] flex items-center justify-center text-center text-white bg-neutral-900"
-        style={{ 
-          backgroundImage: "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://raw.githubusercontent.com/hakkurgithub/images/main/abdullah-usta-hero.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top'
-        }}>
-        <div className="relative z-10 px-4 max-w-4xl mx-auto mt-48">
-          {/* HATA BURADAYDI - Düzeltildi */}
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-2xl leading-tight">
-            {content.heroTitle || "Lezzetin Ustası Abdullah Usta"}
-          </h1>
-          <p className="text-lg md:text-xl font-medium mb-10 opacity-95 drop-shadow-lg">
-            {content.heroSubtitle || "Geleneksel ocakbaşı lezzetini usta ellerden deneyimleyin."}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/menu" className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-xl text-lg">
-              Menüyü İncele
-            </Link>
-            <button 
-              onClick={() => setShowReservationModal(true)}
-              className="bg-white hover:bg-gray-100 text-gray-900 font-bold py-3 px-8 rounded-full transition-all shadow-xl hover:scale-105 text-lg">
-              Rezervasyon Yap
+    <main className="min-h-screen bg-gray-50 pb-20">
+      
+      {/* HERO / KAPAK ALANI */}
+      <div className="bg-red-700 text-white py-16 px-4 text-center rounded-b-[3rem] shadow-xl mb-10">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Abdullah Usta</h1>
+        <p className="text-red-100 text-lg max-w-2xl mx-auto">
+          Geleneksel lezzetlerin modern sunumu. En taze malzemelerle hazırlanan kebaplar, pideler ve daha fazlası.
+        </p>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4">
+        
+        {/* KATEGORİ FİLTRESİ */}
+        <div className="flex overflow-x-auto gap-3 pb-6 mb-4 no-scrollbar">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`whitespace-nowrap px-6 py-3 rounded-full font-bold transition-all shadow-sm ${
+                selectedCategory === cat 
+                  ? 'bg-red-600 text-white shadow-red-200' 
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {cat}
             </button>
-          </div>
-        </div>
-
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <span className="text-3xl opacity-80 text-white">⬇️</span>
-        </div>
-      </section>
-
-      {/* POPÜLER ÜRÜNLER SECTION */}
-      <section className="py-20 container mx-auto px-4 bg-white">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Öne Çıkan Lezzetler</h2>
-          <div className="w-20 h-1 bg-red-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Misafirlerimizin en çok tercih ettiği imza tabaklarımız.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {popularItems.map((item, index) => (
-            <div key={index} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group">
-              <div className="relative h-64 w-full overflow-hidden">
-                <img 
-                  src={item.image || 'https://raw.githubusercontent.com/hakkurgithub/images/main/placeholder.jpg'} 
-                  alt={item.name} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm flex items-center gap-1">
-                  <span className="text-sm">⭐</span>
-                  <span className="text-sm font-bold text-gray-800">4.9</span>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors">{item.name}</h3>
-                <p className="text-gray-500 text-sm mb-4 line-clamp-2">{item.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-red-600 font-black text-2xl">{item.price} ₺</span>
-                  <button 
-                    onClick={() => handleAddToCart(item)}
-                    className="bg-red-600 text-white p-3 rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-100 active:scale-95">
-                    🛒
-                  </button>
-                </div>
-              </div>
-            </div>
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <Link href="/menu" className="inline-flex items-center gap-2 text-red-600 font-bold hover:underline text-lg">
-            Tüm Menüyü Gör →
-          </Link>
-        </div>
-      </section>
+        {/* ÜRÜN LİSTESİ */}
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">Bu kategoride henüz ürün bulunmuyor.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProducts.map((product) => (
+              <div key={product.id} className="bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-shadow border border-gray-100 flex flex-col">
+                
+                {/* Resim Alanı */}
+                <div className="relative h-48 w-full bg-gray-100 rounded-xl overflow-hidden mb-4">
+                  {product.image ? (
+                    <Image src={product.image} alt={product.name} fill className="object-cover hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400 text-sm font-bold">Resim Yok</div>
+                  )}
+                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-gray-700 shadow-sm">
+                    {product.category}
+                  </div>
+                </div>
 
-      <ReservationModal isOpen={showReservationModal} onClose={() => setShowReservationModal(false)} />
-      <WhatsAppOrderModal isOpen={showWhatsAppModal} onClose={() => setShowWhatsAppModal(false)} />
-      {isAdminMode && <AdminPanel isOpen={showAdminPanel} onClose={() => setShowAdminPanel(false)} />}
-    </>
+                {/* Bilgiler */}
+                <div className="flex-grow">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-bold text-gray-800 leading-tight">{product.name}</h3>
+                    <span className="text-red-600 font-black text-xl whitespace-nowrap">{product.price} ₺</span>
+                  </div>
+                  <p className="text-gray-500 text-sm line-clamp-2 mb-4">
+                    {product.description || 'Lezzetli ve taze günlük üretim.'}
+                  </p>
+                </div>
+
+                {/* Sepete Ekle Butonu */}
+                <button
+                  onClick={() => addToCart(product)} // KRİTİK DÜZELTME BURADA YAPILDI
+                  className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <span>Sepete Ekle</span>
+                  <i className="ri-shopping-basket-2-fill"></i>
+                </button>
+
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

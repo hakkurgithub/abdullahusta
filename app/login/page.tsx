@@ -10,13 +10,6 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Şifremi Unuttum Fonksiyonu (WhatsApp'a Yönlendirir)
-  const handleForgotPassword = () => {
-    const adminPhone = "905442024244"; // Sizin Numaranız
-    const message = "Merhaba Abdullah Usta, şifremi unuttum. Yardımcı olabilir misiniz?";
-    window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -88,16 +81,15 @@ export default function LoginPage() {
               <div className="text-red-500 text-sm text-center font-bold bg-red-50 p-2 rounded-lg border border-red-100">
                 {error}
               </div>
-              {/* Hata alınca çıkan yardım butonu */}
-              <button 
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-xs text-center text-blue-600 hover:underline font-bold"
-              >
-                🤷‍♂️ Şifremi Unuttum (WhatsApp'tan Sor)
-              </button>
             </div>
           )}
+
+          {/* YENİ ŞİFREMİ UNUTTUM LİNKİ */}
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors">
+              Şifremi Unuttum?
+            </Link>
+          </div>
 
           <button
             type="submit"

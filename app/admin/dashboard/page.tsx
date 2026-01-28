@@ -12,7 +12,7 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // KATEGORİLER (Sizin menüye özel)
+  // KATEGORİLER
   const CATEGORIES = ["Çorbalar", "Kebaplar", "Izgaralar", "Pide & Lahmacun", "Dönerler", "Tatlılar", "İçecekler", "Salatalar", "Yan Ürünler", "Kiloluk Ürünler", "Dürüm"];
 
   useEffect(() => {
@@ -32,20 +32,17 @@ export default function AdminDashboard() {
   const handleDelete = async (id: string) => {
     if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
     await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
-    fetchProducts(); // Listeyi yenile
+    fetchProducts();
   };
 
-  // AKTİF / PASİF YAP (Göz İkonu)
+  // AKTİF / PASİF YAP
   const toggleStatus = async (product: any) => {
     const newStatus = !product.isAvailable;
-    // Hızlı tepki için önce ekranda değiştir
     setProducts(products.map(p => p.id === product.id ? { ...p, isAvailable: newStatus } : p));
-
-    // Sonra sunucuya kaydet
     await fetch('/api/products', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...product, isAvailable: newStatus, price: product.price }) // Fiyatı da gönderiyoruz ki bozulmasın
+      body: JSON.stringify({ ...product, isAvailable: newStatus, price: product.price })
     });
   };
 
@@ -58,35 +55,37 @@ export default function AdminDashboard() {
   // GÜNCELLEMEYİ KAYDET
   const handleUpdateSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     await fetch('/api/products', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editingProduct),
     });
-
     alert('✅ Ürün Başarıyla Güncellendi!');
     setShowModal(false);
     setEditingProduct(null);
-    fetchProducts(); // Listeyi güncelle
+    fetchProducts();
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         
-        {/* ÜST BAŞLIK */}
+        {/* ÜST BAŞLIK - YENİ BUTON EKLENDİ */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Yönetici Paneli</h1>
             <p className="text-gray-500 mt-1">Hoş geldin, Başkanım 👨‍🍳</p>
           </div>
-          <div className="flex gap-3 mt-4 md:mt-0">
+          <div className="flex gap-3 mt-4 md:mt-0 flex-wrap justify-center">
              <Link href="/" target="_blank" className="bg-gray-100 text-gray-700 px-5 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">
                 🌐 Siteye Git
              </Link>
              <Link href="/admin/orders" className="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
                 📦 Siparişler
+             </Link>
+             {/* YENİ BUTON BURADA */}
+             <Link href="/admin/users" className="bg-purple-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200">
+                👥 Müşteriler
              </Link>
              <Link href="/admin/add-product" className="bg-red-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200">
                 + Yeni Ürün
@@ -94,7 +93,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* İSTATİSTİKLER (Basit) */}
+        {/* İSTATİSTİKLER */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
               <div className="text-xs font-bold text-gray-400 uppercase">Toplam Ürün</div>
@@ -119,7 +118,6 @@ export default function AdminDashboard() {
             ) : products.map((p) => (
               <div key={p.id} className={`p-4 flex flex-col md:flex-row items-center gap-6 hover:bg-gray-50 transition-all ${!p.isAvailable ? 'bg-gray-100 opacity-75' : ''}`}>
                 
-                {/* 1. RESİM */}
                 <div className="w-20 h-20 relative bg-white rounded-lg overflow-hidden flex-shrink-0 border shadow-sm group">
                   {p.image ? (
                     <Image src={p.image} alt={p.name} fill className="object-cover group-hover:scale-110 transition-transform" />
@@ -128,7 +126,6 @@ export default function AdminDashboard() {
                   )}
                 </div>
 
-                {/* 2. BİLGİLER */}
                 <div className="flex-grow text-center md:text-left w-full space-y-1">
                   <div className="text-xs font-bold text-blue-600 uppercase tracking-wide bg-blue-50 inline-block px-2 py-1 rounded-md">
                     {p.category}
@@ -140,10 +137,7 @@ export default function AdminDashboard() {
                   <div className="text-red-600 font-bold text-xl">{p.price} ₺</div>
                 </div>
 
-                {/* 3. İŞLEM BUTONLARI */}
                 <div className="flex items-center gap-3 w-full md:w-auto justify-center">
-                  
-                  {/* Aktif/Pasif Butonu */}
                   <button 
                     onClick={() => toggleStatus(p)}
                     className={`flex flex-col items-center justify-center w-16 h-12 rounded-lg border transition-all ${p.isAvailable ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
@@ -153,7 +147,6 @@ export default function AdminDashboard() {
                     <span className="text-[9px] font-bold">{p.isAvailable ? 'AKTİF' : 'GİZLİ'}</span>
                   </button>
 
-                  {/* Düzenle Butonu */}
                   <button 
                     onClick={() => openEditModal(p)}
                     className="flex flex-col items-center justify-center w-16 h-12 bg-blue-50 text-blue-600 rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-all group"
@@ -163,7 +156,6 @@ export default function AdminDashboard() {
                     <span className="text-[9px] font-bold">DÜZENLE</span>
                   </button>
 
-                  {/* Sil Butonu */}
                   <button 
                     onClick={() => handleDelete(p.id)}
                     className="flex flex-col items-center justify-center w-12 h-12 bg-red-50 text-red-500 rounded-lg border border-red-100 hover:bg-red-600 hover:text-white transition-all"
@@ -171,7 +163,6 @@ export default function AdminDashboard() {
                   >
                     <span className="text-xl">🗑️</span>
                   </button>
-
                 </div>
               </div>
             ))}
@@ -179,20 +170,15 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* --- POP-UP DÜZENLEME PENCERESİ (MODAL) --- */}
       {showModal && editingProduct && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100">
-            
-            {/* Modal Başlık */}
             <div className="p-5 bg-gray-900 text-white flex justify-between items-center">
               <h3 className="font-bold text-xl">✏️ Ürünü Düzenle</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white text-2xl">✕</button>
             </div>
             
-            {/* Modal Form */}
             <form onSubmit={handleUpdateSave} className="p-6 space-y-5">
-              
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">ÜRÜN ADI</label>
                 <input 
@@ -232,7 +218,6 @@ export default function AdminDashboard() {
                   className="w-full p-3 border-2 border-gray-100 rounded-xl text-sm text-blue-600 font-mono focus:border-blue-500 outline-none"
                   value={editingProduct.image || ''}
                   onChange={e => setEditingProduct({...editingProduct, image: e.target.value})}
-                  placeholder="https://..."
                 />
               </div>
 
@@ -243,11 +228,9 @@ export default function AdminDashboard() {
                   className="w-full p-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none resize-none text-sm"
                   value={editingProduct.description || ''}
                   onChange={e => setEditingProduct({...editingProduct, description: e.target.value})}
-                  placeholder="Ürün içeriği hakkında kısa bilgi..."
                 />
               </div>
 
-              {/* Alt Butonlar */}
               <div className="flex gap-3 pt-4 border-t mt-2">
                 <button 
                   type="button" 

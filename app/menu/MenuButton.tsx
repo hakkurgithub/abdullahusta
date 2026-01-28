@@ -2,36 +2,22 @@
 
 import { useCart } from '@/components/CartProvider';
 
-// Ürünün "Kimlik Kartını" (Tipini) tanımlıyoruz
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  image?: string | null;
-  // Başka alanlar varsa buraya ekleyebilirsin ama şimdilik bunlar yeterli
-};
-
-// product prop'unun tipini belirtiyoruz: { product: Product }
-export default function MenuButton({ product }: { product: Product }) {
-  const { addItem } = useCart();
+export default function MenuButton({ product }: { product: any }) {
+  // HATA BURADAYDI: addItem yerine addToCart kullanmalıyız.
+  const { addToCart } = useCart(); 
 
   const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image || "" // Resim null ise boş string gönder
-    });
-    alert(product.name + ' sepete eklendi!');
+    // DÜZELTME: Fonksiyon ismini doğrusuyla değiştirdik
+    addToCart(product); 
   };
 
   return (
-    <button 
+    <button
       onClick={handleAddToCart}
-      className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors font-bold mt-auto"
+      className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 active:scale-95 shadow-md shadow-red-100"
     >
-      Sepete Ekle
+      <span>Sepete Ekle</span>
+      <i className="ri-shopping-basket-2-fill"></i>
     </button>
   );
 }
