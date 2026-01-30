@@ -28,7 +28,7 @@ export default function CartPage() {
           setIsUserLoggedIn(true);
         }
       } catch (error) {
-        console.log("Misafir kullanıcı");
+        console.log("Misafir kullanıcı veya veri çekilemedi");
       }
     };
     fetchUserInfo();
@@ -36,46 +36,63 @@ export default function CartPage() {
 
   // --- SİPARİŞ VE WHATSAPP YÖNLENDİRMESİ ---
   const handleOrder = async () => {
+    // 1. Validasyonlar
     if (items.length === 0) return alert('Sepetiniz boş!');
     if (!address) return alert('Lütfen teslimat adresi giriniz.');
     if (!phone) return alert('Lütfen telefon numarası giriniz.');
 
+    // 2. VERİLERİ SABİTLE (SNAPSHOT AL)
+    // React state'i değişse bile bu değişkenler sabit kalır.
+    const currentItems = [...items]; 
+    const currentTotal = totalPrice;
+    const currentAddress = address;
+    const currentPhone = phone;
+    const currentPayment = paymentMethod;
+
     setLoading(true);
 
     try {
-      // 1. Önce siparişi veritabanına kaydet
+      // 3. Veritabanına Kaydet
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items,
-          total: totalPrice,
-          address,
-          phone,
-          paymentMethod,
+          items: currentItems,
+          total: currentTotal,
+          address: currentAddress,
+          phone: currentPhone,
+          paymentMethod: currentPayment,
         }),
       });
 
       if (res.ok) {
         const orderData = await res.json();
-        
-        // 2. Sipariş ID'sini al (Kısa halini kullanacağız)
         const orderId = orderData.id ? orderData.id.slice(0, 5).toUpperCase() : 'YENI';
 
-        // 3. WhatsApp Mesajını Hazırla
-        const adminPhone = '905442024244'; // Sizin Numaranız
-        const message = `👋 Merhaba Abdullah Usta!\n\nWeb sitenizden yeni bir sipariş verdim.\n\n🧾 *Sipariş No:* #${orderId}\n💰 *Tutar:* ${totalPrice} TL\n💳 *Ödeme:* ${paymentMethod}\n📍 *Adres:* ${address}\n\nSiparişimi onaylar mısınız?`;
+        // 4. WhatsApp Mesajını Hazırla (Sabitlenen Verilerle)
+        const adminPhone = '905442024244'; // Abdullah Usta Telefon
+        
+        // Ürünleri listele
+        const itemsList = currentItems.map(item => 
+          `- ${item.name} (${item.quantity} Adet)`
+        ).join('\n');
+        
+        const message = `👋 Merhaba Abdullah Usta!\n\nWeb sitenizden yeni bir sipariş verdim.\n\n🧾 *Sipariş No:* #${orderId}\n📦 *Sipariş Özeti:*\n${itemsList}\n\n💰 *Tutar:* ${currentTotal} TL\n💳 *Ödeme:* ${currentPayment}\n📍 *Adres:* ${currentAddress}\n📱 *İletişim:* ${currentPhone}\n\nSiparişimi onaylar mısınız?`;
         
         const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
 
-        // 4. Sepeti Temizle ve Yönlendir
+        // 5. Sepeti Temizle
+        // Artık mesajı oluşturduğumuz için sepeti güvenle silebiliriz.
         clearCart();
         
-        // Kullanıcıya bilgi verip WhatsApp'a gönder
-        alert('✅ Siparişiniz veritabanına kaydedildi! Şimdi onay için WhatsApp\'a yönlendiriliyorsunuz...');
+        // 6. Kullanıcıyı Bilgilendir ve Yönlendir
+        alert('✅ Siparişiniz başarıyla alındı! Onay için WhatsApp\'a yönlendiriliyorsunuz...');
+        
+        // window.open yerine location.href mobilde daha stabildir (popup engelleyiciye takılmaz)
         window.location.href = whatsappUrl; 
 
       } else {
+        // Hata Durumları
         if (res.status === 401) {
           alert('Sipariş vermek için lütfen giriş yapın.');
           router.push('/login');
@@ -84,7 +101,7 @@ export default function CartPage() {
         }
       }
     } catch (error) {
-      alert('Bağlantı hatası.');
+      alert('Bağlantı hatası. İnternetinizi kontrol edin.');
     } finally {
       setLoading(false);
     }
